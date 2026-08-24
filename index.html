@@ -1015,15 +1015,15 @@
         const DB_KEY_JRN = 'hrms_journals';
         const DB_KEY_COMP = 'hrms_competency';
 
-        // Mapping kunci identitas untuk Spreadsheet
+       // Mapping kunci identitas untuk Spreadsheet (Sudah diperbaiki case-sensitive nya)
         const DB_MAP = {
-            [DB_KEY_USR]: { sheet: 'Users', key: 'Username' },
-            [DB_KEY_EMP]: { sheet: 'Employees', key: 'NRP' },
+            [DB_KEY_USR]: { sheet: 'Users', key: 'username' },
+            [DB_KEY_EMP]: { sheet: 'Employees', key: 'nrp' },
             [DB_KEY_PROJ]: { sheet: 'Projects', key: 'id' },
             [DB_KEY_TRN]: { sheet: 'Training', key: 'id' },
             [DB_KEY_CERT]: { sheet: 'Certification', key: 'id' },
             [DB_KEY_JRN]: { sheet: 'Journals', key: 'id' },
-            [DB_KEY_COMP]: { sheet: 'Competency', key: 'NRP' }
+            [DB_KEY_COMP]: { sheet: 'Competency', key: 'nrp' }
         };
         
         let localDB = {};
