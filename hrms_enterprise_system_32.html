@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRMS Enterprise - UT Theme</title>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    
+    <!-- SheetJS (Excel) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF & AutoTable for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            /* UT Theme Colors */
+            --primary-bg: #F1F5F9; /* Slate 100 */
+            --sidebar-bg: #1A1A1A; /* Jet Black */
+            --sidebar-hover: #2D3748; /* Dark Gray */
+            --brand-color: #FFC000; /* UT Yellow */
+            --brand-hover: #E6AC00; /* Darker Yellow */
+            --text-main: #2D3748; /* Slate 800 */
+            --text-muted: #718096; /* Slate 500 */
+            --card-bg: #ffffff;
+            --border-color: #E2E8F0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Bootstrap Overrides for UT Theme */
+        .btn-primary {
+            background-color: var(--brand-color);
+            border-color: var(--brand-color);
+            color: #1A1A1A;
+            font-weight: 700;
+        }
+        .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+            background-color: var(--brand-hover) !important;
+            border-color: var(--brand-hover) !important;
+            color: #1A1A1A !important;
+        }
+        .btn-outline-primary {
+            color: var(--sidebar-bg);
+            border-color: var(--brand-color);
+            font-weight: 600;
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--brand-color);
+            color: #1A1A1A;
+            border-color: var(--brand-color);
+        }
+        .bg-primary {
+            background-color: var(--brand-color) !important;
+            color: #1A1A1A !important;
+        }
+        .text-primary {
+            color: var(--sidebar-bg) !important;
+        }
+
+        /* Glassmorphism Login */
+        .login-wrapper {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1A1A1A 0%, #2D3748 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Abstract background decoration for login */
+        .login-wrapper::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: var(--brand-color);
+            border-radius: 50%;
+            top: -100px;
+            left: -100px;
+            opacity: 0.1;
+            filter: blur(50px);
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 420px;
+            z-index: 10;
+            border-top: 8px solid var(--brand-color);
+        }
+
+        /* Layout */
+        #appContainer {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar-brand {
+            padding: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            white-space: nowrap;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .sidebar-brand i {
+            color: var(--brand-color);
+        }
+        .nav-link-custom {
+            color: #A0AEC0;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+        .nav-link-custom:hover, .nav-link-custom.active {
+            background-color: rgba(255, 192, 0, 0.05); /* very faint yellow */
+            color: var(--brand-color);
+            border-left-color: var(--brand-color);
+        }
+        .nav-link-custom i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .sidebar.collapsed .nav-text {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: calc(100% - 260px);
+            transition: all 0.3s ease;
+        }
+        .topbar {
+            background: var(--card-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .content-body {
+            padding: 2rem;
+            flex: 1;
+        }
+        
+        /* Cards & UI Elements */
+        .card-custom {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card-custom:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        }
+        .kpi-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--sidebar-bg);
+            margin-top: 0.25rem;
+            line-height: 1;
+        }
+
+        /* Tables */
+        .table-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        .table-custom th {
+            background-color: #F8FAFC;
+            color: var(--text-muted);
+            font-weight: 700;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        .table-custom td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 0.875rem;
+        }
+        
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .edit-allowed { display: none; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--primary-bg); }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-color); }
+
+        /* Communicative Banner Dashboard */
+        .dash-banner {
+            background-color: var(--sidebar-bg);
+            border-left: 6px solid var(--brand-color);
+            border-radius: 1rem;
+            padding: 1.5rem 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .dash-banner i {
+            position: absolute;
+            right: -20px;
+            bottom: -30px;
+            font-size: 10rem;
+            color: rgba(255,255,255,0.03);
+            transform: rotate(-15deg);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loginScreen" class="login-wrapper fade-in">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <div class="bg-primary rounded d-inline-flex align-items-center justify-content-center mb-3 shadow" style="width: 70px; height: 70px; font-size: 2rem; transform: rotate(3deg);">
+                    <i class="fas fa-hard-hat text-dark" style="transform: rotate(-3deg);"></i>
+                </div>
+                <h3 class="fw-bold mb-1" style="color: #1A1A1A; letter-spacing: -0.5px;">HRMS Enterprise</h3>
+                <p class="fw-bold text-dark mb-2" style="font-size: 0.85rem;">United Tractors Expert Management System</p>
+                <p class="text-muted small fw-bold tracking-widest mb-0" style="letter-spacing: 2px; font-size: 0.7rem;">SECURE LOGIN</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-dark">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-user text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0 bg-light" id="username" required placeholder="Enter username">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-dark">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
+                        <input type="password" class="form-control border-start-0 ps-0 bg-light" id="password" required placeholder="Enter password">
+                        <button class="btn btn-light border" type="button" onclick="togglePassword()"><i class="fas fa-eye text-muted" id="eyeIcon"></i></button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2.5 fs-6 shadow-sm">MASUK KE SISTEM <i class="fas fa-arrow-right ms-2"></i></button>
+                
+                <div class="text-center mt-4 pt-3 border-top border-light">
+                    <p class="text-muted small mb-0 fw-bold">Created by Galih Akup Subekti</p>
+                    <p class="text-muted mb-0 mt-1" style="font-size: 0.7rem; font-weight: 700;"><i class="fas fa-robot me-1"></i> Powered by AI</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="appContainer" class="d-none">
+        
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-hard-hat"></i> <span class="nav-text">HRMS Pro</span>
+            </div>
+            <div class="d-flex flex-column mt-4 gap-1">
+                <a href="#" class="nav-link-custom active" onclick="switchView('dashboard', this)"><i class="fas fa-chart-pie"></i> <span class="nav-text">Dashboard</span></a>
+                <a href="#" class="nav-link-custom" onclick="switchView('employee', this)"><i class="fas fa-users"></i> <span class="nav-text">Database Karyawan</span></a>
+                <a href="#" class="nav-link-custom" onclick="switchView('project', this)"><i class="fas fa-briefcase"></i> <span class="nav-text">Manajemen Project</span></a>
+                <a href="#" class="nav-link-custom" onclick="switchView('training', this)"><i class="fas fa-graduation-cap"></i> <span class="nav-text">Data Training</span></a>
+                <a href="#" class="nav-link-custom" onclick="switchView('certification', this)"><i class="fas fa-certificate"></i> <span class="nav-text">Sertifikasi</span></a>
+                
+                <div class="nav-text px-4 mt-4 mb-2 text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">EXPERT MODULE</div>
+                <a href="#" class="nav-link-custom py-2" onclick="switchView('expert', this)"><i class="fas fa-star"></i> <span class="nav-text">Expert Dashboard</span></a>
+                <a href="#" class="nav-link-custom py-2" onclick="switchView('expertprofile', this)"><i class="fas fa-id-card"></i> <span class="nav-text">Expert Profile</span></a>
+                <a href="#" class="nav-link-custom py-2" onclick="switchView('journals', this)"><i class="fas fa-book-open"></i> <span class="nav-text">Expert Journals</span></a>
+                <a href="#" class="nav-link-custom py-2" onclick="switchView('competency', this)"><i class="fas fa-brain"></i> <span class="nav-text">Competency Score</span></a>
+                
+                <div class="nav-text px-4 mt-4 mb-2 text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">SYSTEM</div>
+                <a href="#" class="nav-link-custom py-2" onclick="switchView('reports', this)"><i class="fas fa-file-alt"></i> <span class="nav-text">Laporan (Report)</span></a>
+                <div class="mt-auto mb-3">
+                    <a href="#" class="nav-link-custom edit-allowed py-2" onclick="switchView('users', this)"><i class="fas fa-user-shield"></i> <span class="nav-text">User Access</span></a>
+                    <a href="#" class="nav-link-custom py-2" onclick="switchView('settings', this)"><i class="fas fa-cog"></i> <span class="nav-text">Settings</span></a>
+                    <a href="#" class="nav-link-custom py-2 text-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Keluar</span></a>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT AREA -->
+        <div class="main-content">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <button class="btn btn-light border shadow-sm" onclick="toggleSidebar()"><i class="fas fa-bars text-dark"></i></button>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-md-block">
+                        <div class="fw-bold text-dark" id="displayUserName" style="line-height: 1.2;">Admin</div>
+                        <div class="small text-muted fw-bold" id="displayUserRole" style="font-size: 0.7rem; text-transform: uppercase;">Administrator</div>
+                    </div>
+                    <div class="bg-primary text-dark rounded d-flex align-items-center justify-content-center shadow-sm fw-bold" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                        <span id="displayUserInitial">A</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-body">
+                
+                <!-- VIEW: DASHBOARD (Enhanced Visuals & Storytelling) -->
+                <div id="view-dashboard" class="view-section active fade-in">
+                    
+                    <!-- Communicative Banner -->
+                    <div class="dash-banner mb-4">
+                        <i class="fas fa-chart-line"></i>
+                        <div class="position-relative z-1">
+                            <h3 class="fw-bold mb-2" id="dashGreeting">Halo, Admin.</h3>
+                            <p class="mb-0 fs-6 text-light" style="max-width: 800px; line-height: 1.6;" id="dashStory">
+                                Memuat ringkasan data sistem...
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 fw-bold">Key Performance Indicators</h5>
+                        <button class="btn btn-outline-secondary btn-sm fw-bold" onclick="renderDashboard()"><i class="fas fa-sync-alt me-1"></i> Perbarui</button>
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card-custom text-center h-100 d-flex flex-column justify-content-center py-4 border-bottom border-4 border-warning">
+                                <div class="kpi-title">Total Karyawan Aktif</div>
+                                <div class="kpi-value" id="kpiTotalEmp">0</div>
+                                <div class="small text-muted mt-2 fw-bold"><i class="fas fa-users text-primary me-1"></i> Terdaftar di sistem</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="card-custom text-center h-100 d-flex flex-column justify-content-center py-4 border-bottom border-4 border-dark">
+                                <div class="kpi-title">Rata-rata Usia</div>
+                                <div class="kpi-value" id="kpiAvgAge">0</div>
+                                <div class="small text-muted mt-2 fw-bold"><i class="fas fa-birthday-cake text-primary me-1"></i> Tahun</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-12">
+                            <div class="card-custom h-100 d-flex flex-column justify-content-center py-3">
+                                <div class="kpi-title text-center mb-3">Distribusi Pilar (Aktif)</div>
+                                <div class="d-flex justify-content-around text-center w-100">
+                                    <div><div class="fw-bold text-muted small mb-1">AE</div><div class="fs-3 fw-bold text-dark bg-light rounded px-3 py-1" id="kpiAE">0</div></div>
+                                    <div><div class="fw-bold text-muted small mb-1">PSC</div><div class="fs-3 fw-bold text-dark bg-light rounded px-3 py-1" id="kpiPSC">0</div></div>
+                                    <div><div class="fw-bold text-muted small mb-1">PRE</div><div class="fs-3 fw-bold text-dark bg-light rounded px-3 py-1" id="kpiPRE">0</div></div>
+                                    <div><div class="fw-bold text-muted small mb-1">TPSE</div><div class="fs-3 fw-bold text-dark bg-light rounded px-3 py-1" id="kpiTPSE">0</div></div>
+                                    <div><div class="fw-bold text-muted small mb-1">TCDE</div><div class="fs-3 fw-bold text-dark bg-light rounded px-3 py-1" id="kpiTCDE">0</div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="card-custom h-100">
+                                <h6 class="fw-bold mb-4 text-dark">Matriks Karyawan by Golongan & Pilar</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered text-center align-middle mb-0" id="tblGolonganDashboard">
+                                        <!-- Generated by JS -->
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card-custom h-100 d-flex flex-column">
+                                <h6 class="fw-bold mb-4 text-dark text-center">Demografi Usia (Generasi)</h6>
+                                <div style="position: relative; height: 300px; width: 100%;">
+                                    <canvas id="chartAge"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-employee" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h3 class="mb-0 fw-bold">Database Karyawan</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-light border fw-bold" onclick="downloadTemplate()"><i class="fas fa-file-excel me-2 text-success"></i>Template</button>
+                            <button class="btn btn-outline-secondary edit-allowed fw-bold" onclick="document.getElementById('importExcelInput').click()"><i class="fas fa-upload me-2"></i>Import Data</button>
+                            <input type="file" id="importExcelInput" class="d-none" accept=".xlsx, .xls" onchange="handleImportExcel(event)">
+                            <button class="btn btn-dark edit-allowed fw-bold" onclick="openUpdateStatusModal()"><i class="fas fa-user-tag me-2 text-primary"></i>Update Status</button>
+                            <button class="btn btn-primary edit-allowed" onclick="openEmpModal()"><i class="fas fa-plus me-2"></i>Karyawan Baru</button>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="d-flex justify-content-between mb-4 align-items-center">
+                            <div class="input-group w-50 shadow-sm rounded">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="searchEmp" class="form-control border-start-0 ps-0" placeholder="Pencarian NRP atau Nama Karyawan..." onkeyup="renderEmpTable()">
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger edit-allowed" onclick="deleteAllEmployees()"><i class="fas fa-trash-alt me-1"></i>Hapus Semua Data</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom" id="tblEmployee">
+                                <thead>
+                                    <tr>
+                                        <th>NRP</th>
+                                        <th>Nama Karyawan</th>
+                                        <th>Usia</th>
+                                        <th>Golongan</th>
+                                        <th>Pilar</th>
+                                        <th>Tahun</th>
+                                        <th>Status</th>
+                                        <th class="edit-allowed text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-project" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0 fw-bold">Manajemen Project</h3>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-light border text-danger edit-allowed fw-bold" onclick="resetAllProjects()"><i class="fas fa-sync me-2"></i>Reset Projects</button>
+                            <button class="btn btn-primary edit-allowed" onclick="openProjectModal()"><i class="fas fa-plus me-2"></i>Project Baru</button>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="input-group w-50 shadow-sm">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="searchProject" class="form-control border-start-0 ps-0" placeholder="Pencarian Nama Karyawan / Judul Project..." onkeyup="renderProjectTable()">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom align-middle" id="tblProject">
+                                <thead>
+                                    <tr>
+                                        <th>PIC (Nama - NRP)</th>
+                                        <th>Pilar</th>
+                                        <th>Judul Project</th>
+                                        <th>Jadwal Pelaksanaan</th>
+                                        <th class="edit-allowed text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-training" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h3 class="mb-0 fw-bold">Riwayat Training</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-light border fw-bold" onclick="downloadTrainingTemplate()"><i class="fas fa-file-excel me-2 text-success"></i>Template</button>
+                            <button class="btn btn-outline-secondary edit-allowed fw-bold" onclick="document.getElementById('importTrainingExcelInput').click()"><i class="fas fa-upload me-2"></i>Import Excel</button>
+                            <input type="file" id="importTrainingExcelInput" class="d-none" accept=".xlsx, .xls" onchange="handleImportTrainingExcel(event)">
+                            <button class="btn btn-primary edit-allowed" onclick="openTrainingModal()"><i class="fas fa-plus me-2"></i>Input Training</button>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom" id="tblTraining">
+                                <thead>
+                                    <tr>
+                                        <th>Karyawan</th>
+                                        <th>Nama Pelatihan</th>
+                                        <th>Penyelenggara</th>
+                                        <th>Tanggal</th>
+                                        <th>Nilai</th>
+                                        <th>Status</th>
+                                        <th class="edit-allowed">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-certification" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h3 class="mb-0 fw-bold">Riwayat Sertifikasi</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-light border fw-bold" onclick="downloadCertificationTemplate()"><i class="fas fa-file-excel me-2 text-success"></i>Template</button>
+                            <button class="btn btn-outline-secondary edit-allowed fw-bold" onclick="document.getElementById('importCertificationExcelInput').click()"><i class="fas fa-upload me-2"></i>Import Excel</button>
+                            <input type="file" id="importCertificationExcelInput" class="d-none" accept=".xlsx, .xls" onchange="handleImportCertificationExcel(event)">
+                            <button class="btn btn-primary edit-allowed" onclick="openCertificationModal()"><i class="fas fa-plus me-2"></i>Input Sertifikasi</button>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom" id="tblCertification">
+                                <thead>
+                                    <tr>
+                                        <th>Karyawan</th>
+                                        <th>Nama Sertifikasi</th>
+                                        <th>Lembaga</th>
+                                        <th>Tanggal</th>
+                                        <th>Nilai / Grade</th>
+                                        <th>Status Sertifikat</th>
+                                        <th class="edit-allowed">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-expert" class="view-section fade-in">
+                    <h3 class="mb-4 fw-bold">Komposisi Expert Pilar</h3>
+                    <div class="row g-4" id="expertCardsContainer">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <div id="view-expertprofile" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0 fw-bold">Profil Expert</h3>
+                    </div>
+                    <div class="mb-4">
+                        <div class="input-group w-50 shadow-sm rounded">
+                            <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="searchExpertProfile" class="form-control border-start-0 ps-0" placeholder="Pencarian Nama atau NRP Expert..." onkeyup="renderExpertProfileTable()">
+                        </div>
+                    </div>
+                    <div class="row g-4" id="expertProfileContainer">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+
+                <div id="view-journals" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h3 class="mb-0 fw-bold">Jurnal & Publikasi Expert</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-light border fw-bold" onclick="downloadJournalTemplate()"><i class="fas fa-file-excel me-2 text-success"></i>Template</button>
+                            <button class="btn btn-outline-secondary edit-allowed fw-bold" onclick="document.getElementById('importJournalExcelInput').click()"><i class="fas fa-upload me-2"></i>Import Excel</button>
+                            <input type="file" id="importJournalExcelInput" class="d-none" accept=".xlsx, .xls" onchange="handleImportJournalExcel(event)">
+                            <button class="btn btn-danger fw-bold" onclick="exportJournalPDF()"><i class="fas fa-file-pdf me-2"></i> Cetak PDF</button>
+                            <button class="btn btn-primary edit-allowed" onclick="openJournalModal()"><i class="fas fa-plus me-2"></i> Input Jurnal</button>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="input-group w-50 shadow-sm">
+                                <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" id="searchJournal" class="form-control border-start-0 ps-0" placeholder="Pencarian Nama Expert atau NRP..." onkeyup="renderJournalsTable()">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom" id="tblJournals">
+                                <thead>
+                                    <tr>
+                                        <th>Expert (Nama - NRP)</th>
+                                        <th>Judul Jurnal Publikasi</th>
+                                        <th>Tingkat Level</th>
+                                        <th>Tanggal Terbit</th>
+                                        <th class="edit-allowed text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-competency" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <h3 class="mb-0 fw-bold">Evaluasi Kompetensi Expert</h3>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-light border fw-bold" onclick="downloadCompetencyTemplate()"><i class="fas fa-file-excel me-2 text-success"></i>Template</button>
+                            <button class="btn btn-outline-secondary edit-allowed fw-bold" onclick="document.getElementById('importCompetencyExcelInput').click()"><i class="fas fa-upload me-2"></i>Import Excel</button>
+                            <input type="file" id="importCompetencyExcelInput" class="d-none" accept=".xlsx, .xls" onchange="handleImportCompetencyExcel(event)">
+                            <button class="btn btn-danger fw-bold" onclick="exportCompetencyPDF()"><i class="fas fa-file-pdf me-2"></i> Cetak PDF</button>
+                            <button class="btn btn-primary edit-allowed" onclick="openCompetencyModal()"><i class="fas fa-star me-2"></i> Input Nilai</button>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom align-middle" id="tblCompetency">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width: 180px;">Karyawan</th>
+                                        <th class="text-center">Tech</th>
+                                        <th class="text-center">Innov</th>
+                                        <th class="text-center">Analys</th>
+                                        <th class="text-center">Plan</th>
+                                        <th class="text-center">Comm</th>
+                                        <th class="text-center">Drive</th>
+                                        <th class="text-center">Rata-rata</th>
+                                        <th class="edit-allowed text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-reports" class="view-section fade-in">
+                    <h3 class="mb-4 fw-bold">Laporan Data Karyawan (Report)</h3>
+                    <div class="card-custom mb-4 bg-light border-0">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-dark">Filter Pilar Expert</label>
+                                <select class="form-select shadow-sm" id="reportFilterPilar">
+                                    <option value="ALL">Semua Pilar (ALL)</option>
+                                    <option value="PRE">PRE</option>
+                                    <option value="TPSE">TPSE</option>
+                                    <option value="TCDE">TCDE</option>
+                                    <option value="PSC">PSC</option>
+                                    <option value="AE">AE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-dark w-100 shadow-sm fw-bold" onclick="generateReport()"><i class="fas fa-bolt me-2 text-primary"></i>Tarik Laporan</button>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-success bg-white w-100 shadow-sm fw-bold" onclick="exportReportExcel()"><i class="fas fa-file-excel me-2"></i>Export Excel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-custom">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom" id="tblReport">
+                                <thead>
+                                    <tr>
+                                        <th>NRP</th>
+                                        <th>Nama Karyawan</th>
+                                        <th>Pilar</th>
+                                        <th>Golongan</th>
+                                        <th>Tahun</th>
+                                        <th>Jml Project</th>
+                                        <th>Jml Training</th>
+                                        <th>Jml Sertifikasi</th>
+                                    </tr>
+                                </thead>
+                                <tbody><tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-table fs-3 mb-2"></i><br>Klik "Tarik Laporan" untuk menampilkan data</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-users" class="view-section fade-in">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3 class="mb-0 fw-bold">Manajemen Akses (Users)</h3>
+                        <button class="btn btn-primary" onclick="openUserModal()"><i class="fas fa-plus me-2"></i>Akun Baru</button>
+                    </div>
+                    <div class="card-custom">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-custom" id="tblUsers">
+                                <thead>
+                                    <tr>
+                                        <th>Username / ID Login</th>
+                                        <th>Hak Akses (Role)</th>
+                                        <th>Status Akun</th>
+                                        <th class="text-center">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Generated by JS --></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="view-settings" class="view-section fade-in">
+                    <h3 class="mb-4 fw-bold">Pengaturan Sistem</h3>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="card-custom text-center border-top border-4 border-danger">
+                                <i class="fas fa-database text-danger mb-3" style="font-size: 3.5rem;"></i>
+                                <h5 class="fw-bold">Database Reset</h5>
+                                <p class="text-muted small mb-4">Fitur ini akan menghapus semua memori lokal dan mengembalikan sistem ke data bawaan pabrik (Dummy Data).</p>
+                                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                    <button class="btn btn-danger fw-bold w-100" onclick="resetDatabase()"><i class="fas fa-exclamation-triangle me-2"></i>FACTORY RESET</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS SECTION -->
+    
+    <!-- Modal Employee -->
+    <div class="modal fade" id="modalEmp" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="modalEmpTitle">Form Karyawan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formEmp">
+                        <input type="hidden" id="empId">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Nomor Registrasi (NRP)</label>
+                            <input type="text" class="form-control" id="empNrp" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Nama Lengkap</label>
+                            <input type="text" class="form-control" id="empNama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Tanggal Lahir</label>
+                            <input type="date" class="form-control" id="empTgl" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small text-muted">Golongan</label>
+                                <input type="text" class="form-control" id="empGol" required placeholder="Cth: 3, 4AD">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small text-muted">Pilar</label>
+                                <select class="form-select" id="empPilar">
+                                    <option>PRE</option><option>TPSE</option><option>TCDE</option><option>PSC</option><option>AE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold small text-muted">Tahun Angkatan</label>
+                                <input type="number" class="form-control" id="empTahun" required>
+                            </div>
+                        </div>
+                        <div class="mb-3 border-top pt-3">
+                            <label class="form-label fw-bold small text-muted">Status Aktif Karyawan</label>
+                            <select class="form-select border-dark" id="empStatus" onchange="document.getElementById('empReasonDiv').style.display = this.value === 'Inactive' ? 'block' : 'none'">
+                                <option value="Active">Active (Beroperasi)</option>
+                                <option value="Inactive">Inactive (Non-aktif)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 bg-light p-3 rounded" id="empReasonDiv" style="display: none;">
+                            <label class="form-label fw-bold text-danger">Alasan Status Inactive</label>
+                            <select class="form-select border-danger" id="empInactiveReason">
+                                <option value="Mutasi">Mutasi / Pindah Cabang</option>
+                                <option value="Resign">Resign (Mengundurkan Diri)</option>
+                                <option value="Pensiun">Pensiun</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveEmployee()"><i class="fas fa-save me-2"></i>Simpan Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Update Status Terpusat -->
+    <div class="modal fade" id="modalUpdateStatus" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white border-bottom border-4 border-warning">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-user-tag me-2 text-warning"></i>Update Status Massal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formUpdateStatus">
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Pilih Karyawan Target</label>
+                            <div class="input-group mb-2 shadow-sm">
+                                <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" class="form-control" id="usSearchEmployeeInput" placeholder="Ketik NRP atau Nama Karyawan..." onkeyup="filterUpdateStatusEmployees()">
+                            </div>
+                            <select class="form-select bg-light" id="usNrp" required></select>
+                        </div>
+                        <div class="mb-3 bg-light p-3 rounded border border-warning">
+                            <label class="form-label fw-bold">Ubah Menjadi Status</label>
+                            <select class="form-select border-dark" id="usStatus" onchange="document.getElementById('usReasonDiv').style.display = this.value === 'Inactive' ? 'block' : 'none'">
+                                <option value="Active">🟢 Active (Aktif Bekerja)</option>
+                                <option value="Inactive">🔴 Inactive (Non-aktif)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="usReasonDiv" style="display: none;">
+                            <label class="form-label fw-bold text-danger">Keterangan Inactive</label>
+                            <select class="form-select border-danger" id="usInactiveReason">
+                                <option value="Mutasi">Mutasi / Pindah Entitas</option>
+                                <option value="Resign">Resign / Berhenti</option>
+                                <option value="Pensiun">Pensiun</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Tutup</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUpdateStatus()"><i class="fas fa-check-circle me-2"></i>Konfirmasi Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Project (Styling matched to theme) -->
+    <div class="modal fade" id="modalProject" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title fw-bold" id="modalProjectTitle">Form Project</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formProject">
+                        <input type="hidden" id="projId">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Penanggung Jawab (PIC)</label>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+                                <input type="text" class="form-control" id="projSearchEmployeeInput" placeholder="Ketik NRP atau Nama..." onkeyup="filterProjectEmployees()">
+                            </div>
+                            <select class="form-select" id="projNrp" required onchange="updateProjPilar()"></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Asal Pilar Expert</label>
+                            <input type="text" class="form-control bg-light fw-bold text-center border-0 text-primary" id="projPilar" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-muted">Judul Pekerjaan / Project</label>
+                            <input type="text" class="form-control" id="projTitle" required placeholder="Cth: Implementasi Modul HR Baru">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">Mulai (Start Date)</label>
+                                <input type="date" class="form-control" id="projStartDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold small text-muted">Selesai (End Date)</label>
+                                <input type="date" class="form-control" id="projEndDate" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProject()"><i class="fas fa-save me-2"></i>Simpan Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Training, Certification, User, Journal, Competency (Simplified wrappers for code brevity but styled consistently) -->
+    <!-- Note: Keeping identical inner logic, updating only header/button classes to match UT Theme -->
+    
+    <div class="modal fade" id="modalTraining" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white"><h5 class="modal-title fw-bold">Input Data Training</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="formTraining">
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Pilih Karyawan</label><input type="text" class="form-control mb-2" id="trSearchEmployeeInput" placeholder="Ketik NRP/Nama..." onkeyup="filterTrainingEmployees()"><select class="form-select" id="trNrp" required></select></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Nama Pelatihan</label><input type="text" class="form-control" id="trName" required></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Penyelenggara</label><input type="text" class="form-control" id="trProvider"></div><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Tanggal</label><input type="date" class="form-control" id="trDate"></div></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Nilai / Score</label><input type="number" class="form-control" id="trScore"></div><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Status</label><select class="form-select border-dark" id="trStatus"><option>Passed</option><option>Failed</option><option>Ongoing</option></select></div></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveTraining()"><i class="fas fa-save me-2"></i>Simpan</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCertification" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white"><h5 class="modal-title fw-bold">Input Sertifikasi</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="formCertification">
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Pilih Karyawan</label><input type="text" class="form-control mb-2" id="certSearchEmployeeInput" placeholder="Ketik NRP/Nama..." onkeyup="filterCertificationEmployees()"><select class="form-select" id="certNrp" required></select></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Nama Sertifikasi</label><input type="text" class="form-control" id="certName" required></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Lembaga</label><input type="text" class="form-control" id="certProvider"></div><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Tanggal Valid</label><input type="date" class="form-control" id="certDate"></div></div>
+                        <div class="row"><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Grade/Score</label><input type="text" class="form-control" id="certScore" placeholder="A, 90, dll"></div><div class="col-md-6 mb-3"><label class="form-label fw-bold small text-muted">Status</label><select class="form-select border-dark" id="certStatus"><option value="Active">Active</option><option value="Expired">Expired</option><option value="In Progress">In Progress</option></select></div></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveCertification()"><i class="fas fa-save me-2"></i>Simpan</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalUser" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white"><h5 class="modal-title fw-bold">Manajemen Akun</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="formUser">
+                        <input type="hidden" id="usrId">
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Username / ID Login</label><input type="text" class="form-control" id="usrName" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Password Sementara</label><input type="password" class="form-control" id="usrPass" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Tingkat Akses (Role)</label><select class="form-select border-dark" id="usrRole"><option value="admin">Administrator Full</option><option value="hr">HR Officer</option><option value="viewer">Viewer Only</option></select></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveUser()"><i class="fas fa-save me-2"></i>Buat Akun</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalJournal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white"><h5 class="modal-title fw-bold">Input Jurnal Expert</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="formJournal">
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Pilih Karyawan Expert</label><input type="text" class="form-control mb-2" id="jrnSearchExpertInput" placeholder="Pencarian..." onkeyup="filterJournalExperts()"><select class="form-select" id="jrnNrp" required></select></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Judul Jurnal/Publikasi</label><input type="text" class="form-control" id="jrnTitle" required></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Tingkat Publikasi</label><select class="form-select border-dark" id="jrnLevel" required><option value="Internasional Bereputasi (Scopus/WoS)">Internasional Bereputasi (Scopus/WoS)</option><option value="Internasional">Internasional</option><option value="Nasional Terakreditasi (SINTA)">Nasional Terakreditasi (SINTA)</option><option value="Nasional">Nasional</option><option value="Internal Company">Internal Company</option></select></div>
+                        <div class="mb-3"><label class="form-label fw-bold small text-muted">Tanggal Publikasi</label><input type="date" class="form-control" id="jrnDate" required></div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary" onclick="saveJournal()"><i class="fas fa-save me-2"></i>Simpan</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCompetency" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white border-bottom border-4 border-warning"><h5 class="modal-title fw-bold">Input Nilai Evaluasi (Skala 1-5)</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <form id="formCompetency">
+                        <div class="mb-4"><label class="form-label fw-bold text-dark">Pilih Karyawan Expert</label><input type="text" class="form-control mb-2 shadow-sm" id="compSearchExpertInput" placeholder="Pencarian..." onkeyup="filterCompetencyExperts()"><select class="form-select bg-light" id="compNrp" required onchange="populateCompetencyScores()"></select></div>
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label fw-bold small text-muted mb-1">Technical Comp.</label><input type="number" class="form-control form-control-sm border-dark text-center fw-bold" id="compTech" min="1" max="5" step="0.5" value="3.0" required></div>
+                            <div class="col-md-6"><label class="form-label fw-bold small text-muted mb-1">Innovation</label><input type="number" class="form-control form-control-sm border-dark text-center fw-bold" id="compInno" min="1" max="5" step="0.5" value="3.0" required></div>
+                            <div class="col-md-6"><label class="form-label fw-bold small text-muted mb-1">Analysis & Judge.</label><input type="number" class="form-control form-control-sm border-dark text-center fw-bold" id="compAna" min="1" max="5" step="0.5" value="3.0" required></div>
+                            <div class="col-md-6"><label class="form-label fw-bold small text-muted mb-1">Plan & Drive Act.</label><input type="number" class="form-control form-control-sm border-dark text-center fw-bold" id="compPlan" min="1" max="5" step="0.5" value="3.0" required></div>
+                            <div class="col-md-6"><label class="form-label fw-bold small text-muted mb-1">Comm & Cust Focus</label><input type="number" class="form-control form-control-sm border-dark text-center fw-bold" id="compComm" min="1" max="5" step="0.5" value="3.0" required></div>
+                            <div class="col-md-6"><label class="form-label fw-bold small text-muted mb-1">Drive</label><input type="number" class="form-control form-control-sm border-dark text-center fw-bold" id="compDrive" min="1" max="5" step="0.5" value="3.0" required></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-primary w-100" onclick="saveCompetency()"><i class="fas fa-check-circle me-2"></i>Simpan Evaluasi</button></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Bootstrap & ChartJS Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // --- DATABASE MODULE ---
+        const DB_KEY_EMP = 'hrms_employees';
+        const DB_KEY_USR = 'hrms_users';
+        const DB_KEY_PROJ = 'hrms_project'; 
+        const DB_KEY_TRN = 'hrms_training';
+        const DB_KEY_CERT = 'hrms_certification';
+        const DB_KEY_JRN = 'hrms_journals';
+        const DB_KEY_COMP = 'hrms_competency';
+        
+        let currentUser = null;
+        let chartInstances = {};
+
+        function initDB() {
+            if (!localStorage.getItem(DB_KEY_USR)) {
+                localStorage.setItem(DB_KEY_USR, JSON.stringify([
+                    { username: 'admin', password: 'admin123', role: 'admin', active: true },
+                    { username: 'hr', password: 'hr123', role: 'hr', active: true },
+                    { username: 'viewer', password: '123', role: 'viewer', active: true }
+                ]));
+            }
+            if (!localStorage.getItem(DB_KEY_EMP)) generateDummyData();
+            if (!localStorage.getItem(DB_KEY_PROJ)) localStorage.setItem(DB_KEY_PROJ, JSON.stringify([]));
+            if (!localStorage.getItem(DB_KEY_TRN)) localStorage.setItem(DB_KEY_TRN, JSON.stringify([]));
+            if (!localStorage.getItem(DB_KEY_CERT)) localStorage.setItem(DB_KEY_CERT, JSON.stringify([]));
+            if (!localStorage.getItem(DB_KEY_JRN)) localStorage.setItem(DB_KEY_JRN, JSON.stringify([]));
+            if (!localStorage.getItem(DB_KEY_COMP)) localStorage.setItem(DB_KEY_COMP, JSON.stringify([]));
+        }
+
+        function getDB(key) { return JSON.parse(localStorage.getItem(key)) || []; }
+        function saveDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+
+        function generateDummyData() {
+            const pilars = ['PRE', 'TPSE', 'TCDE', 'PSC', 'AE'];
+            const names = ['Budi Santoso', 'Siti Aminah', 'Agus Supriyanto', 'Rina Wati', 'Joko Widodo', 'Sri Wahyuni', 'Hendro Siswanto', 'Maria Ulfa', 'Eko Prasetyo', 'Nurul Hidayah', 'Arif Rahman', 'Dewi Lestari', 'Rudi Hermawan', 'Fitriani', 'Bambang Pamungkas', 'Endang Sulistyowati', 'Dwi Yulianto', 'Ratna Sari', 'Iwan Fals', 'Lilis Suryani', 'Ahmad Dahlan', 'Kartini', 'Hasan Basri', 'Megawati', 'Reza Rahadian', 'Dian Sastro', 'Tora Sudiro', 'Luna Maya', 'Vino Bastian', 'Raisa Andriana'];
+            const golongansList = ['3', '4AD', '4EF', '5AB', '5CD'];
+            
+            let emps = []; let projs = []; let trns = []; let certs = []; let jrnls = []; let comps = [];
+            
+            for(let i=0; i<30; i++) {
+                let nrp = 'EMP' + (1001 + i);
+                let tahun = Math.floor(Math.random() * (2023 - 2010 + 1)) + 2010;
+                let byear = 1960 + Math.floor(Math.random() * 45); 
+                let birthMonth = (Math.floor(Math.random() * 12) + 1).toString().padStart(2, '0');
+                let birthDay = (Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0');
+                let pilar = pilars[Math.floor(Math.random() * pilars.length)];
+                
+                emps.push({
+                    nrp: nrp, nama: names[i], tglLahir: `${byear}-${birthMonth}-${birthDay}`,
+                    golongan: golongansList[Math.floor(Math.random() * golongansList.length)],
+                    pilar: pilar, tahun: tahun, status: 'Active', created: new Date().toISOString()
+                });
+                
+                if(i % 3 === 0) projs.push({ id: 'PRJ' + Date.now() + i, nrp: nrp, title: 'Project Inovasi ' + pilar + ' ' + (i+1), startDate: '2024-01-01', endDate: '2024-12-31' });
+                
+                if(i % 2 === 0) {
+                    trns.push({ id: 'TRN' + Date.now() + i, nrp: nrp, name: 'Advanced ' + pilar + ' Training', provider: 'BNSP', date: '2023-01-10', score: Math.floor(Math.random() * 40) + 60, status: 'Passed' });
+                    certs.push({ id: 'CRT' + Date.now() + i, nrp: nrp, name: 'Certified ' + pilar + ' Expert', provider: 'Global Cert', date: '2023-05-15', score: 'A', status: 'Active' });
+                }
+
+                if(i % 4 === 0) jrnls.push({ id: 'JRN' + Date.now() + i, nrp: nrp, title: 'Study on ' + pilar + ' Optimization', level: 'Nasional', date: '2023-11-20' });
+
+                comps.push({
+                    nrp: nrp, tech: (Math.random() * 2 + 3).toFixed(1), inno: (Math.random() * 2 + 3).toFixed(1),
+                    ana: (Math.random() * 2 + 3).toFixed(1), plan: (Math.random() * 2 + 3).toFixed(1),
+                    comm: (Math.random() * 2 + 3).toFixed(1), drive: (Math.random() * 2 + 3).toFixed(1)
+                });
+            }
+            saveDB(DB_KEY_EMP, emps); saveDB(DB_KEY_PROJ, projs); saveDB(DB_KEY_TRN, trns);
+            saveDB(DB_KEY_CERT, certs); saveDB(DB_KEY_JRN, jrnls); saveDB(DB_KEY_COMP, comps);
+        }
+
+        // --- LOGIN & ROUTING ---
+        function togglePassword() {
+            const pass = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if(pass.type === 'password') { pass.type = 'text'; icon.className = 'fas fa-eye-slash text-dark'; } 
+            else { pass.type = 'password'; icon.className = 'fas fa-eye text-muted'; }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const users = getDB(DB_KEY_USR);
+            
+            const user = users.find(x => x.username === u && x.password === p && x.active);
+            if(user) {
+                currentUser = user;
+                document.getElementById('loginScreen').classList.add('d-none');
+                document.getElementById('appContainer').classList.remove('d-none');
+                document.getElementById('displayUserName').innerText = u.toUpperCase();
+                document.getElementById('displayUserInitial').innerText = u.charAt(0).toUpperCase();
+                document.getElementById('displayUserRole').innerText = user.role;
+                
+                // Override swal confirm color globally for UT Theme
+                Swal.mixin({ customClass: { confirmButton: 'btn btn-primary px-4', cancelButton: 'btn btn-outline-secondary px-4 me-2' }, buttonsStyling: false });
+                
+                applyRolePermissions();
+                switchView('dashboard', document.querySelector('.nav-link-custom'));
+            } else {
+                Swal.fire({title: 'Akses Ditolak', text: 'Username, password salah, atau akun non-aktif.', icon: 'error', confirmButtonColor: '#1A1A1A' });
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('appContainer').classList.add('d-none');
+            document.getElementById('loginScreen').classList.remove('d-none');
+            document.getElementById('loginForm').reset();
+        }
+
+        function applyRolePermissions() {
+            const edits = document.querySelectorAll('.edit-allowed');
+            edits.forEach(el => {
+                if(currentUser.role === 'admin' || (currentUser.role === 'hr' && !el.closest('#view-users'))) {
+                    el.style.display = (el.tagName === 'TH' || el.tagName === 'TD') ? 'table-cell' : 'inline-block';
+                } else { el.style.display = 'none'; }
+            });
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+        function switchView(viewId, navEl) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            
+            document.querySelectorAll('.nav-link-custom').forEach(el => el.classList.remove('active'));
+            if(navEl) navEl.classList.add('active');
+
+            if(viewId === 'dashboard') renderDashboard();
+            if(viewId === 'employee') renderEmpTable();
+            if(viewId === 'project') renderProjectTable();
+            if(viewId === 'training') renderTrainingTable();
+            if(viewId === 'certification') renderCertificationTable();
+            if(viewId === 'expert') renderExpertView();
+            if(viewId === 'expertprofile') renderExpertProfileTable();
+            if(viewId === 'journals') renderJournalsTable();
+            if(viewId === 'competency') renderCompetencyTable();
+            if(viewId === 'users') renderUsers();
+        }
+
+        // --- DASHBOARD (UT Enhanced) ---
+        function calculateAge(tglLahir) {
+            if (!tglLahir) return 0;
+            const birthYear = new Date(tglLahir).getFullYear();
+            return isNaN(birthYear) ? 0 : new Date().getFullYear() - birthYear;
+        }
+
+        function formatDisplayTahun(tahunData) {
+            if (!tahunData) return '-';
+            let str = String(tahunData).trim();
+            if (str.length > 4 && (str.includes('-') || str.includes('/'))) {
+                let d = new Date(str);
+                if (!isNaN(d)) return d.getFullYear();
+            }
+            return str.length >= 4 ? str.substring(0, 4) : str;
+        }
+
+        function renderDashboard() {
+            const allEmps = getDB(DB_KEY_EMP);
+            const emps = allEmps.filter(e => e.status === 'Active');
+            
+            document.getElementById('kpiTotalEmp').innerText = emps.length;
+            
+            let totalAge = emps.reduce((sum, emp) => sum + calculateAge(emp.tglLahir), 0);
+            let avgAge = emps.length ? Math.round(totalAge / emps.length) : 0;
+            document.getElementById('kpiAvgAge').innerText = avgAge;
+            
+            let pilarCounts = { 'AE': 0, 'PSC': 0, 'PRE': 0, 'TPSE': 0, 'TCDE': 0 };
+            emps.forEach(e => {
+                let p = (e.pilar || '').toString().toUpperCase().trim();
+                if(pilarCounts[p] !== undefined) pilarCounts[p]++;
+            });
+            
+            document.getElementById('kpiAE').innerText = pilarCounts['AE'];
+            document.getElementById('kpiPSC').innerText = pilarCounts['PSC'];
+            document.getElementById('kpiPRE').innerText = pilarCounts['PRE'];
+            document.getElementById('kpiTPSE').innerText = pilarCounts['TPSE'];
+            document.getElementById('kpiTCDE').innerText = pilarCounts['TCDE'];
+
+            // Communicative Story Logic
+            let maxPilar = ''; let maxCount = -1;
+            for(let p in pilarCounts) { if(pilarCounts[p] > maxCount) { maxCount = pilarCounts[p]; maxPilar = p; } }
+            
+            let username = currentUser ? currentUser.username.toUpperCase() : 'Admin';
+            document.getElementById('dashGreeting').innerText = `Halo, ${username}.`;
+            document.getElementById('dashStory').innerHTML = `Sistem Enterprise saat ini mengelola <strong>${emps.length} data karyawan aktif</strong> dengan rata-rata generasi berusia <strong>${avgAge} tahun</strong>. Kekuatan sumber daya terbesar saat ini berpusat pada pilar <strong>${maxPilar}</strong> yang mendominasi dengan total <strong>${maxCount} personel ahli</strong>. Pastikan untuk terus meninjau pergerakan data kompetensi untuk menjaga efisiensi korporat.`;
+
+            renderGolonganTable(emps);
+            
+            let genGroups = {'Gen Z (1997-2012)':0, 'Millennials / Gen Y (1981-1996)':0, 'Gen X (1965-1980)':0, 'Baby Boomers (<=1964)':0};
+            emps.forEach(e => {
+                let byear = new Date(e.tglLahir).getFullYear();
+                if(byear >= 1997) genGroups['Gen Z (1997-2012)']++;
+                else if(byear >= 1981) genGroups['Millennials / Gen Y (1981-1996)']++;
+                else if(byear >= 1965) genGroups['Gen X (1965-1980)']++;
+                else genGroups['Baby Boomers (<=1964)']++;
+            });
+            
+            let finalGenGroups = {};
+            for (let key in genGroups) { if (genGroups[key] > 0) finalGenGroups[key] = genGroups[key]; }
+            
+            updateChart('chartAge', 'doughnut', finalGenGroups);
+        }
+
+        function updateChart(canvasId, type, dataObj) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if(chartInstances[canvasId]) chartInstances[canvasId].destroy();
+            
+            // UT Color Palette for Charts
+            const utColors = ['#FFC000', '#1A1A1A', '#718096', '#E6AC00', '#2D3748', '#CBD5E1'];
+
+            let chartConfig = {
+                type: type,
+                data: {
+                    labels: Object.keys(dataObj),
+                    datasets: [{
+                        data: Object.values(dataObj),
+                        backgroundColor: utColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 } } } }
+                }
+            };
+            chartInstances[canvasId] = new Chart(ctx, chartConfig);
+        }
+
+        function renderGolonganTable(emps) {
+            const pilars = ['AE', 'PSC', 'PRE', 'TPSE', 'TCDE']; 
+            const mapGolongan = (g) => {
+                if (!g) return '3';
+                let gStr = g.toString().toUpperCase().replace(/\s+/g, '');
+                if (gStr === '3' || gStr === 'III') return '3';
+                if (['4E', '4F', '4EF', 'IVE', 'IVF'].some(v => gStr.includes(v))) return '4EF';
+                if (['4A', '4B', '4C', '4D', '4AB', '4CD', '4AD', 'IVA', 'IVB', 'IVC', 'IVD'].some(v => gStr.includes(v))) return '4AD';
+                if (['5A', '5B', '5AB', 'VA', 'VB'].some(v => gStr.includes(v))) return '5AB';
+                if (['5C', '5D', '5CD', 'VC', 'VD'].some(v => gStr.includes(v))) return '5CD';
+                return '3';
+            };
+
+            let mappedEmps = emps.map(e => ({ ...e, mappedGolongan: mapGolongan(e.golongan), cleanPilar: (e.pilar || '').toString().toUpperCase().trim() }));
+            
+            const customGolonganOrder = ['5CD', '5AB', '4EF', '4AD', '3'];
+            const table = document.getElementById('tblGolonganDashboard');
+            if(!table) return;
+
+            let html = `<thead class="table-dark"><tr><th class="text-start">Golongan</th>${pilars.map(p => `<th>${p}</th>`).join('')}<th class="bg-primary text-dark">Total</th></tr></thead><tbody>`;
+
+            let colTotals = { 'PRE': 0, 'TPSE': 0, 'TCDE': 0, 'PSC': 0, 'AE': 0 };
+            let grandTotal = 0;
+
+            customGolonganOrder.forEach(g => {
+                html += `<tr><td class="text-start fw-bold text-dark">${g}</td>`;
+                let rowTotal = 0;
+                pilars.forEach(p => {
+                    let count = mappedEmps.filter(e => e.mappedGolongan === g && e.cleanPilar === p).length;
+                    rowTotal += count; colTotals[p] += count;
+                    html += `<td class="${count>0?'fw-semibold':''}">${count > 0 ? count : '-'}</td>`;
+                });
+                grandTotal += rowTotal;
+                html += `<td class="fw-bold bg-light text-dark">${rowTotal > 0 ? rowTotal : '-'}</td></tr>`;
+            });
+
+            html += `<tr class="fw-bold table-dark"><td class="text-start">TOTAL KESELURUHAN</td>${pilars.map(p => `<td>${colTotals[p]}</td>`).join('')}<td class="bg-primary text-dark fs-5">${grandTotal}</td></tr></tbody>`;
+            table.innerHTML = html;
+        }
+
+        // --- CRUD LOGIC WRAPPERS (Preserving existing logic, updating SweetAlert aesthetics) ---
+        
+        function customSwal(title, text, icon) {
+            Swal.fire({ title: title, text: text, icon: icon, confirmButtonColor: '#1A1A1A' });
+        }
+
+        // Employee
+        function renderEmpTable() {
+            const emps = getDB(DB_KEY_EMP);
+            const searchVal = (document.getElementById('searchEmp')?.value || '').toLowerCase();
+            const tbody = document.querySelector('#tblEmployee tbody');
+            const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            
+            let filtered = emps.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal));
+            
+            let html = '';
+            filtered.forEach(e => {
+                let badgeClass = e.status === 'Active' ? 'bg-success' : 'bg-danger';
+                let toggleAction = e.status === 'Active' ? `<button class="btn btn-sm btn-outline-warning text-dark fw-bold" onclick="setInactive('${e.nrp}')" title="Set Inactive"><i class="fas fa-user-times"></i></button>` : `<button class="btn btn-sm btn-outline-success fw-bold" onclick="setActive('${e.nrp}')" title="Set Active"><i class="fas fa-user-check"></i></button>`;
+                let action = canEdit ? `<div class="d-flex justify-content-center gap-2"><button class="btn btn-sm btn-outline-primary" onclick="editEmp('${e.nrp}')"><i class="fas fa-edit"></i></button>${toggleAction}<button class="btn btn-sm btn-outline-danger" onclick="delEmp('${e.nrp}')"><i class="fas fa-trash"></i></button></div>` : '-';
+                
+                html += `<tr><td><strong>${e.nrp}</strong></td><td class="fw-medium">${e.nama}</td><td>${calculateAge(e.tglLahir)}</td><td><span class="badge bg-secondary">${e.golongan}</span></td><td><span class="badge bg-dark text-warning">${e.pilar}</span></td><td>${formatDisplayTahun(e.tahun)}</td><td><span class="badge ${badgeClass}">${e.status}</span></td><td class="edit-allowed text-center" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
+            });
+            tbody.innerHTML = html || `<tr><td colspan="8" class="text-center py-5 text-muted"><i class="fas fa-folder-open fs-2 mb-2"></i><br>Tidak ada data ditemukan.</td></tr>`;
+        }
+
+        function setInactive(nrp) {
+            Swal.fire({
+                title: 'Non-aktifkan Karyawan',
+                html: `<div class="text-start mb-3"><label class="form-label fw-bold small">Alasan Inactive:</label><select class="form-select border-dark" id="swalReasonSelect"><option value="Mutasi">Mutasi</option><option value="Resign">Resign</option><option value="Pensiun">Pensiun</option></select></div>`,
+                showCancelButton: true, confirmButtonText: 'Set Inactive', confirmButtonColor: '#E6AC00',
+                preConfirm: () => document.getElementById('swalReasonSelect').value
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => e.nrp === nrp);
+                    if(emp) { emp.status = 'Inactive'; emp.inactiveReason = res.value; saveDB(DB_KEY_EMP, emps); renderEmpTable(); if(document.getElementById('view-dashboard').classList.contains('active')) renderDashboard(); customSwal('Tersimpan!', `Karyawan di-set Inactive (${res.value}).`, 'success'); }
+                }
+            });
+        }
+
+        function setActive(nrp) {
+            Swal.fire({ title: 'Aktifkan Karyawan?', text: "Karyawan ini akan kembali aktif dan muncul di perhitungan Dashboard.", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Aktifkan', confirmButtonColor: '#22c55e'
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => e.nrp === nrp);
+                    if(emp) { emp.status = 'Active'; emp.inactiveReason = ''; saveDB(DB_KEY_EMP, emps); renderEmpTable(); if(document.getElementById('view-dashboard').classList.contains('active')) renderDashboard(); customSwal('Diaktifkan!', 'Status karyawan kembali Active.', 'success'); }
+                }
+            });
+        }
+
+        let empModalInst;
+        function openEmpModal() {
+            document.getElementById('formEmp').reset(); document.getElementById('empId').value = ''; document.getElementById('empNrp').readOnly = false; document.getElementById('empStatus').value = 'Active'; document.getElementById('empReasonDiv').style.display = 'none';
+            if(!empModalInst) empModalInst = new bootstrap.Modal(document.getElementById('modalEmp')); empModalInst.show();
+        }
+
+        function saveEmployee() {
+            let nrp = document.getElementById('empNrp').value.trim();
+            if(!nrp) return customSwal('Error', 'NRP Wajib diisi', 'error');
+            let emps = getDB(DB_KEY_EMP); let isEdit = document.getElementById('empId').value !== '';
+            if(!isEdit && emps.find(e => e.nrp === nrp)) return customSwal('Error', 'NRP sudah terdaftar', 'error');
+
+            let data = { nrp: nrp, nama: document.getElementById('empNama').value, tglLahir: document.getElementById('empTgl').value, golongan: document.getElementById('empGol').value, pilar: document.getElementById('empPilar').value, tahun: document.getElementById('empTahun').value, status: document.getElementById('empStatus').value, inactiveReason: document.getElementById('empStatus').value === 'Inactive' ? document.getElementById('empInactiveReason').value : '', created: new Date().toISOString() };
+            if(isEdit) { let idx = emps.findIndex(e => e.nrp === nrp); emps[idx] = {...emps[idx], ...data}; } else { emps.push(data); }
+
+            saveDB(DB_KEY_EMP, emps); empModalInst.hide(); customSwal('Berhasil', 'Data karyawan tersimpan!', 'success'); renderEmpTable(); if(document.getElementById('view-dashboard').classList.contains('active')) renderDashboard();
+        }
+
+        function editEmp(nrp) {
+            let emp = getDB(DB_KEY_EMP).find(e => e.nrp === nrp); if(!emp) return;
+            document.getElementById('empId').value = emp.nrp; document.getElementById('empNrp').value = emp.nrp; document.getElementById('empNrp').readOnly = true; document.getElementById('empNama').value = emp.nama; document.getElementById('empTgl').value = emp.tglLahir; document.getElementById('empGol').value = emp.golongan; document.getElementById('empPilar').value = emp.pilar; document.getElementById('empTahun').value = formatDisplayTahun(emp.tahun); document.getElementById('empStatus').value = emp.status;
+            if(emp.inactiveReason) document.getElementById('empInactiveReason').value = emp.inactiveReason;
+            document.getElementById('empReasonDiv').style.display = emp.status === 'Inactive' ? 'block' : 'none';
+            document.getElementById('modalEmpTitle').innerText = 'Edit Karyawan';
+            if(!empModalInst) empModalInst = new bootstrap.Modal(document.getElementById('modalEmp')); empModalInst.show();
+        }
+
+        function delEmp(nrp) {
+            Swal.fire({ title: 'Hapus Data Permanen?', text: "Semua relasi project dan training akan ikut terhapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    saveDB(DB_KEY_EMP, getDB(DB_KEY_EMP).filter(e => e.nrp !== nrp)); saveDB(DB_KEY_PROJ, getDB(DB_KEY_PROJ).filter(e => e.nrp !== nrp)); saveDB(DB_KEY_TRN, getDB(DB_KEY_TRN).filter(e => e.nrp !== nrp)); saveDB(DB_KEY_CERT, getDB(DB_KEY_CERT).filter(e => e.nrp !== nrp)); saveDB(DB_KEY_JRN, getDB(DB_KEY_JRN).filter(e => e.nrp !== nrp)); saveDB(DB_KEY_COMP, getDB(DB_KEY_COMP).filter(e => e.nrp !== nrp));
+                    renderEmpTable(); customSwal('Terhapus!', 'Data karyawan ditarik dari sistem.', 'success');
+                }
+            });
+        }
+        function deleteAllEmployees() {
+            Swal.fire({ title: 'HAPUS KESELURUHAN?', text: "Sistem akan dikosongkan secara paksa. Aksi ini tidak dapat dibatalkan!", icon: 'error', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eksekusi Hapus'
+            }).then((res) => {
+                if (res.isConfirmed) { saveDB(DB_KEY_EMP, []); saveDB(DB_KEY_PROJ, []); saveDB(DB_KEY_TRN, []); saveDB(DB_KEY_CERT, []); saveDB(DB_KEY_JRN, []); saveDB(DB_KEY_COMP, []); renderEmpTable(); customSwal('Terhapus!', 'Database dikosongkan.', 'success'); }
+            });
+        }
+
+        // UPDATE STATUS
+        let updateStatusModalInst; let allEmployeesForStatusUpdate = [];
+        function openUpdateStatusModal() {
+            document.getElementById('formUpdateStatus').reset(); document.getElementById('usReasonDiv').style.display = 'none'; document.getElementById('usSearchEmployeeInput').value = '';
+            allEmployeesForStatusUpdate = getDB(DB_KEY_EMP); populateUpdateStatusDropdown(allEmployeesForStatusUpdate);
+            if(!updateStatusModalInst) updateStatusModalInst = new bootstrap.Modal(document.getElementById('modalUpdateStatus')); updateStatusModalInst.show();
+        }
+        function populateUpdateStatusDropdown(employees) {
+            const select = document.getElementById('usNrp'); select.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+            employees.forEach(e => { let statusInd = e.status === 'Active' ? '🟢' : '🔴'; select.innerHTML += `<option value="${e.nrp}">${statusInd} ${e.nrp} - ${e.nama} (${e.status})</option>`; });
+        }
+        function filterUpdateStatusEmployees() {
+            const searchVal = document.getElementById('usSearchEmployeeInput').value.toLowerCase();
+            const filtered = allEmployeesForStatusUpdate.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal));
+            populateUpdateStatusDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('usNrp').value = filtered[0].nrp; }
+        }
+        function saveUpdateStatus() {
+            const nrp = document.getElementById('usNrp').value; const newStatus = document.getElementById('usStatus').value; const reason = document.getElementById('usInactiveReason').value;
+            if(!nrp) return customSwal('Error', 'Silakan pilih karyawan', 'error');
+            let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => e.nrp === nrp);
+            if(emp) {
+                emp.status = newStatus; emp.inactiveReason = newStatus === 'Inactive' ? reason : ''; saveDB(DB_KEY_EMP, emps); updateStatusModalInst.hide(); customSwal('Berhasil', `Status karyawan diperbarui menjadi ${newStatus}`, 'success'); renderEmpTable(); if(document.getElementById('view-dashboard').classList.contains('active')) renderDashboard();
+            }
+        }
+
+        // Project Management
+        let projectModalInst; let allEmployeesForProject = [];
+        function renderProjectTable() {
+            const projs = getDB(DB_KEY_PROJ); const emps = getDB(DB_KEY_EMP); const searchVal = (document.getElementById('searchProject')?.value || '').toLowerCase(); const tbody = document.querySelector('#tblProject tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            let html = '';
+            projs.forEach(p => {
+                let emp = emps.find(e => e.nrp === p.nrp); let empName = emp ? emp.nama : p.nrp; let empPilar = emp ? emp.pilar : '-';
+                if (empName.toLowerCase().includes(searchVal) || p.title.toLowerCase().includes(searchVal)) {
+                    let action = canEdit ? `<div class="d-flex justify-content-center gap-2"><button class="btn btn-sm btn-outline-primary" onclick="editProject('${p.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="delProject('${p.id}')"><i class="fas fa-trash"></i></button></div>` : '-';
+                    html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${p.nrp}</small></td><td><span class="badge bg-dark text-warning">${empPilar}</span></td><td class="fw-medium">${p.title}</td><td>${p.startDate} s/d ${p.endDate}</td><td class="edit-allowed text-center" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
+                }
+            });
+            tbody.innerHTML = html || `<tr><td colspan="5" class="text-center py-5 text-muted">Belum ada project terdaftar.</td></tr>`;
+        }
+        function openProjectModal() {
+            document.getElementById('formProject').reset(); document.getElementById('projId').value = ''; document.getElementById('projSearchEmployeeInput').value = '';
+            allEmployeesForProject = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateProjectDropdown(allEmployeesForProject);
+            document.getElementById('projNrp').disabled = false; document.getElementById('projPilar').value = ''; document.getElementById('modalProjectTitle').innerText = 'Form Project';
+            if(!projectModalInst) projectModalInst = new bootstrap.Modal(document.getElementById('modalProject')); projectModalInst.show();
+        }
+        function populateProjectDropdown(employees) {
+            const select = document.getElementById('projNrp'); select.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
+            employees.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; });
+        }
+        function filterProjectEmployees() {
+            const searchVal = document.getElementById('projSearchEmployeeInput').value.toLowerCase();
+            const filtered = allEmployeesForProject.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal));
+            populateProjectDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('projNrp').value = filtered[0].nrp; updateProjPilar(); }
+        }
+        function updateProjPilar() {
+            const nrp = document.getElementById('projNrp').value; const emp = getDB(DB_KEY_EMP).find(e => e.nrp === nrp);
+            document.getElementById('projPilar').value = emp ? emp.pilar : '';
+        }
+        function saveProject() {
+            const id = document.getElementById('projId').value; const nrp = document.getElementById('projNrp').value; const title = document.getElementById('projTitle').value; const start = document.getElementById('projStartDate').value; const end = document.getElementById('projEndDate').value;
+            if(!nrp || !title || !start || !end) return customSwal('Error', 'Lengkapi form wajib', 'error');
+            let projs = getDB(DB_KEY_PROJ);
+            if(id) { let idx = projs.findIndex(p => p.id === id); if(idx > -1) { projs[idx].title = title; projs[idx].startDate = start; projs[idx].endDate = end; } } 
+            else { projs.push({ id: 'PRJ' + Date.now(), nrp: nrp, title: title, startDate: start, endDate: end }); }
+            saveDB(DB_KEY_PROJ, projs); projectModalInst.hide(); customSwal('Tersimpan', 'Data project diperbarui', 'success'); renderProjectTable();
+        }
+        function editProject(id) {
+            let p = getDB(DB_KEY_PROJ).find(x => x.id === id); if(!p) return;
+            allEmployeesForProject = getDB(DB_KEY_EMP); populateProjectDropdown(allEmployeesForProject);
+            document.getElementById('projId').value = p.id; document.getElementById('projNrp').value = p.nrp; document.getElementById('projNrp').disabled = true; document.getElementById('projTitle').value = p.title; document.getElementById('projStartDate').value = p.startDate; document.getElementById('projEndDate').value = p.endDate; updateProjPilar();
+            document.getElementById('modalProjectTitle').innerText = 'Edit Project';
+            if(!projectModalInst) projectModalInst = new bootstrap.Modal(document.getElementById('modalProject')); projectModalInst.show();
+        }
+        function delProject(id) {
+            Swal.fire({ title: 'Hapus Project?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then((res) => {
+                if(res.isConfirmed) { saveDB(DB_KEY_PROJ, getDB(DB_KEY_PROJ).filter(p => p.id !== id)); renderProjectTable(); customSwal('Terhapus', 'Catatan dihapus.', 'success'); }
+            });
+        }
+        function resetAllProjects() {
+            Swal.fire({ title: 'Reset Semua Project?', text: "Data tidak bisa dikembalikan!", icon: 'error', showCancelButton: true, confirmButtonColor: '#d33' }).then((res) => {
+                if(res.isConfirmed) { saveDB(DB_KEY_PROJ, []); renderProjectTable(); customSwal('Reset', 'Data project dikosongkan.', 'success'); }
+            });
+        }
+
+        // Training
+        let trainingModalInst; let allEmployeesForTraining = [];
+        function renderTrainingTable() {
+            const trns = getDB(DB_KEY_TRN); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblTraining tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            let html = '';
+            trns.forEach(t => {
+                let emp = emps.find(e => e.nrp === t.nrp); let empName = emp ? emp.nama : t.nrp; let badgeClass = t.status === 'Passed' ? 'bg-success' : t.status === 'Failed' ? 'bg-danger' : 'bg-warning text-dark'; let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delTraining('${t.id}')"><i class="fas fa-trash"></i></button>` : '-';
+                html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${t.nrp}</small></td><td class="fw-medium">${t.name}</td><td>${t.provider}</td><td>${t.date}</td><td><span class="fw-bold">${t.score}</span></td><td><span class="badge ${badgeClass}">${t.status}</span></td><td class="edit-allowed" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
+            });
+            tbody.innerHTML = html || `<tr><td colspan="7" class="text-center py-5 text-muted">Belum ada histori training</td></tr>`;
+        }
+        function openTrainingModal() {
+            document.getElementById('formTraining').reset(); document.getElementById('trSearchEmployeeInput').value = '';
+            allEmployeesForTraining = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateTrainingDropdown(allEmployeesForTraining);
+            if(!trainingModalInst) trainingModalInst = new bootstrap.Modal(document.getElementById('modalTraining')); trainingModalInst.show();
+        }
+        function populateTrainingDropdown(employees) { const select = document.getElementById('trNrp'); select.innerHTML = ''; employees.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
+        function filterTrainingEmployees() { const searchVal = document.getElementById('trSearchEmployeeInput').value.toLowerCase(); const filtered = allEmployeesForTraining.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateTrainingDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('trNrp').value = filtered[0].nrp; } }
+        function saveTraining() { let trns = getDB(DB_KEY_TRN); trns.push({ id: 'TRN' + Date.now(), nrp: document.getElementById('trNrp').value, name: document.getElementById('trName').value, provider: document.getElementById('trProvider').value, date: document.getElementById('trDate').value, score: document.getElementById('trScore').value, status: document.getElementById('trStatus').value }); saveDB(DB_KEY_TRN, trns); trainingModalInst.hide(); customSwal('Success', 'Histori training ditambahkan', 'success'); renderTrainingTable(); }
+        function delTraining(id) { saveDB(DB_KEY_TRN, getDB(DB_KEY_TRN).filter(t => t.id !== id)); renderTrainingTable(); }
+
+        // Certification
+        let certificationModalInst; let allEmployeesForCertification = [];
+        function renderCertificationTable() {
+            const certs = getDB(DB_KEY_CERT); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblCertification tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            let html = '';
+            certs.forEach(c => {
+                let emp = emps.find(e => e.nrp === c.nrp); let empName = emp ? emp.nama : c.nrp; let badgeClass = c.status === 'Active' ? 'bg-success' : c.status === 'Expired' ? 'bg-danger' : 'bg-warning text-dark'; let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delCertification('${c.id}')"><i class="fas fa-trash"></i></button>` : '-';
+                html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${c.nrp}</small></td><td class="fw-medium">${c.name}</td><td>${c.provider}</td><td>${c.date}</td><td><span class="fw-bold text-primary">${c.score}</span></td><td><span class="badge ${badgeClass}">${c.status}</span></td><td class="edit-allowed" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
+            });
+            tbody.innerHTML = html || `<tr><td colspan="7" class="text-center py-5 text-muted">Belum ada sertifikasi terdata</td></tr>`;
+        }
+        function openCertificationModal() { document.getElementById('formCertification').reset(); document.getElementById('certSearchEmployeeInput').value = ''; allEmployeesForCertification = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateCertificationDropdown(allEmployeesForCertification); if(!certificationModalInst) certificationModalInst = new bootstrap.Modal(document.getElementById('modalCertification')); certificationModalInst.show(); }
+        function populateCertificationDropdown(employees) { const select = document.getElementById('certNrp'); select.innerHTML = ''; employees.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
+        function filterCertificationEmployees() { const searchVal = document.getElementById('certSearchEmployeeInput').value.toLowerCase(); const filtered = allEmployeesForCertification.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateCertificationDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('certNrp').value = filtered[0].nrp; } }
+        function saveCertification() { let certs = getDB(DB_KEY_CERT); certs.push({ id: 'CRT' + Date.now(), nrp: document.getElementById('certNrp').value, name: document.getElementById('certName').value, provider: document.getElementById('certProvider').value, date: document.getElementById('certDate').value, score: document.getElementById('certScore').value, status: document.getElementById('certStatus').value }); saveDB(DB_KEY_CERT, certs); certificationModalInst.hide(); customSwal('Success', 'Sertifikasi tersimpan', 'success'); renderCertificationTable(); }
+        function delCertification(id) { saveDB(DB_KEY_CERT, getDB(DB_KEY_CERT).filter(c => c.id !== id)); renderCertificationTable(); }
+
+        // Expert Dashboard
+        function renderExpertView() {
+            const emps = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); const jrnls = getDB(DB_KEY_JRN);
+            let pilars = { 'PRE':0, 'TPSE':0, 'TCDE':0, 'PSC':0, 'AE':0 }; let pilarJrnls = { 'PRE':0, 'TPSE':0, 'TCDE':0, 'PSC':0, 'AE':0 };
+            emps.forEach(e => { let p = (e.pilar || '').toString().toUpperCase().trim(); if(pilars[p] !== undefined) pilars[p]++; });
+            jrnls.forEach(j => { let emp = emps.find(e => e.nrp === j.nrp); if (emp) { let p = (emp.pilar || '').toString().toUpperCase().trim(); if (pilarJrnls[p] !== undefined) pilarJrnls[p]++; } });
+
+            let pilarRatios = Object.keys(pilars).map(p => ({ pilar: p, ratio: pilars[p] > 0 ? (pilarJrnls[p] / pilars[p]) : 0 })).sort((a, b) => b.ratio - a.ratio);
+            let pilarRanks = {}; let currentRank = 1; let starsMap = [3, 2, 1];
+            pilarRatios.forEach(pr => { if(pr.ratio > 0 && currentRank <= 3) { pilarRanks[pr.pilar] = starsMap[currentRank - 1]; currentRank++; } else { pilarRanks[pr.pilar] = 0; } });
+
+            let html = '';
+            const icons = { 'PRE':'fa-flask', 'TPSE':'fa-cogs', 'TCDE':'fa-network-wired', 'PSC':'fa-hands-helping', 'AE':'fa-user-tie' };
+            
+            for(let p in pilars) {
+                let starHtml = ''; let rankStars = pilarRanks[p];
+                if (rankStars === 3) starHtml = '<div class="position-absolute top-0 end-0 p-3"><span class="text-warning fs-4" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.4));"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span></div>';
+                else if (rankStars === 2) starHtml = '<div class="position-absolute top-0 end-0 p-3"><span class="text-warning fs-4" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.4));"><i class="fas fa-star"></i><i class="fas fa-star"></i></span></div>';
+                else if (rankStars === 1) starHtml = '<div class="position-absolute top-0 end-0 p-3"><span class="text-warning fs-4" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.4));"><i class="fas fa-star"></i></span></div>';
+
+                let ratioText = pilars[p] > 0 ? (pilarJrnls[p] / pilars[p]).toFixed(2) : '0.00';
+                html += `
+                <div class="col-md-4 col-sm-6">
+                    <div class="card-custom text-center p-4 h-100 d-flex flex-column justify-content-center position-relative border-top border-4 border-warning">
+                        ${starHtml}
+                        <div class="bg-dark text-warning rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                            <i class="fas ${icons[p]}"></i>
+                        </div>
+                        <h4 class="fw-bold mb-1 text-dark">${p}</h4>
+                        <div class="fs-1 fw-black text-dark" style="font-weight: 900;">${pilars[p]}</div>
+                        <div class="text-muted small mb-3 fw-bold">Expert Aktif</div>
+                        <div class="border-top pt-3 d-flex justify-content-between align-items-center">
+                            <span class="badge bg-light text-dark border fw-bold px-2 py-2"><i class="fas fa-book text-warning me-1"></i> ${pilarJrnls[p]} Jurnal</span>
+                            <span class="badge bg-dark text-white fw-bold px-2 py-2"><i class="fas fa-chart-line text-primary me-1"></i> Rasio: ${ratioText}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }
+            document.getElementById('expertCardsContainer').innerHTML = html;
+        }
+
+        // Expert Profile
+        function renderExpertProfileTable() {
+            const emps = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); const trns = getDB(DB_KEY_TRN); const certs = getDB(DB_KEY_CERT); const jrnls = getDB(DB_KEY_JRN); const comps = getDB(DB_KEY_COMP); const searchVal = (document.getElementById('searchExpertProfile')?.value || '').toLowerCase(); const container = document.getElementById('expertProfileContainer');
+            let filteredEmps = emps.filter(e => e.nama.toLowerCase().includes(searchVal) || e.nrp.toLowerCase().includes(searchVal)); let html = '';
+            
+            filteredEmps.forEach(e => {
+                let empTrns = trns.filter(t => t.nrp === e.nrp).length; let empCerts = certs.filter(c => c.nrp === e.nrp && c.status === 'Active').length;
+                let empJrnls = jrnls.filter(j => j.nrp === e.nrp); let totalJrnls = empJrnls.length;
+                
+                let starBadge = '';
+                if (totalJrnls >= 3) starBadge = '<span class="text-warning fs-5" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span>';
+                else if (totalJrnls === 2) starBadge = '<span class="fs-5" style="color: #cbd5e1; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));"><i class="fas fa-star"></i><i class="fas fa-star"></i></span>';
+                else if (totalJrnls === 1) starBadge = '<span class="text-dark fs-5"><i class="fas fa-star"></i></span>';
+                
+                let comp = comps.find(c => c.nrp === e.nrp); let avgComp = 'N/A'; let compBadge = 'bg-secondary';
+                if(comp) { let total = parseFloat(comp.tech) + parseFloat(comp.inno) + parseFloat(comp.ana) + parseFloat(comp.plan) + parseFloat(comp.comm) + parseFloat(comp.drive); avgComp = (total / 6).toFixed(2); compBadge = avgComp >= 4 ? 'bg-success' : avgComp >= 3 ? 'bg-primary' : 'bg-secondary text-dark'; }
+                
+                html += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card-custom h-100 position-relative p-4 border-top border-4 border-dark">
+                        <div class="position-absolute top-0 end-0 p-3">${starBadge}</div>
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="bg-dark text-warning rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1 fw-bold text-dark">${e.nama}</h5>
+                                <div class="text-muted small fw-bold">${e.nrp} &bull; <span class="badge bg-warning text-dark">${e.pilar}</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="row text-center mb-4 g-2">
+                            <div class="col-4">
+                                <div class="border rounded bg-light p-2 h-100 border-start border-4 border-primary">
+                                    <div class="fw-black text-dark fs-5">${empTrns}</div><div class="text-muted" style="font-size:0.65rem; font-weight:700;">TRAININGS</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded bg-light p-2 h-100 border-start border-4 border-success">
+                                    <div class="fw-black text-dark fs-5">${empCerts}</div><div class="text-muted" style="font-size:0.65rem; font-weight:700;">SERTIFIKAT</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded bg-light p-2 h-100 border-start border-4 border-warning">
+                                    <div class="fw-black text-dark fs-5">${empJrnls.length}</div><div class="text-muted" style="font-size:0.65rem; font-weight:700;">JURNAL</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                            <div>
+                                <div class="text-muted" style="font-size: 0.7rem; font-weight:700;">AVG. COMPETENCY</div>
+                                <span class="badge ${compBadge} fs-6 mt-1"><i class="fas fa-brain me-1"></i> ${avgComp}</span>
+                            </div>
+                            <button class="btn btn-outline-dark btn-sm px-3 fw-bold" onclick="viewExpertDetail('${e.nrp}')"><i class="fas fa-address-card me-1 text-primary"></i> Detail</button>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html || `<div class="col-12 text-center py-5 text-muted"><i class="fas fa-search fs-2 mb-3"></i><br>Pencarian tidak menemukan hasil.</div>`;
+        }
+        function viewExpertDetail(nrp) {
+            const emp = getDB(DB_KEY_EMP).find(e => e.nrp === nrp); if(!emp) return;
+            const trns = getDB(DB_KEY_TRN).filter(t => t.nrp === nrp); const certs = getDB(DB_KEY_CERT).filter(c => c.nrp === nrp); const jrnls = getDB(DB_KEY_JRN).filter(j => j.nrp === nrp); const comp = getDB(DB_KEY_COMP).find(c => c.nrp === nrp);
+            let trnList = trns.length ? trns.map(t => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${t.name} <small class="text-muted">(${t.date})</small></li>`).join('') : '<li class="text-muted">Tidak ada data</li>';
+            let certList = certs.length ? certs.map(c => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${c.name} <small class="text-muted">(${c.provider})</small></li>`).join('') : '<li class="text-muted">Tidak ada data</li>';
+            let jrnlList = jrnls.length ? jrnls.map(j => `<li class="mb-1"><i class="fas fa-bookmark text-warning me-2"></i>${j.title} <span class="badge bg-light text-dark border ms-1">${j.level}</span></li>`).join('') : '<li class="text-muted">Tidak ada data</li>';
+            
+            let compHtml = '<span class="text-muted">Belum dievaluasi</span>';
+            if(comp) {
+                compHtml = `<div class="row g-2 small text-dark"><div class="col-6"><strong>Technical:</strong> ${comp.tech}</div><div class="col-6"><strong>Innovation:</strong> ${comp.inno}</div><div class="col-6"><strong>Analysis:</strong> ${comp.ana}</div><div class="col-6"><strong>Planning:</strong> ${comp.plan}</div><div class="col-6"><strong>Communication:</strong> ${comp.comm}</div><div class="col-6"><strong>Drive:</strong> ${comp.drive}</div></div>`;
+            }
+
+            Swal.fire({
+                title: `<div class="fw-black text-dark text-start border-bottom pb-2 mb-3 border-4 border-warning">Profil: ${emp.nama}</div>`,
+                html: `<div class="text-start">
+                        <div class="bg-light p-3 rounded mb-3 border">
+                            <p class="mb-1"><strong>NRP:</strong> ${emp.nrp}</p>
+                            <p class="mb-1"><strong>Pilar:</strong> <span class="badge bg-warning text-dark">${emp.pilar}</span></p>
+                            <p class="mb-0"><strong>Golongan:</strong> ${emp.golongan}</p>
+                        </div>
+                        <h6 class="fw-bold"><i class="fas fa-certificate text-dark me-1"></i> Sertifikasi</h6><ul class="list-unstyled ms-3 small">${certList}</ul>
+                        <h6 class="fw-bold mt-3"><i class="fas fa-graduation-cap text-dark me-1"></i> Pelatihan (Training)</h6><ul class="list-unstyled ms-3 small">${trnList}</ul>
+                        <h6 class="fw-bold mt-3"><i class="fas fa-book text-warning me-1"></i> Jurnal Publikasi</h6><ul class="list-unstyled ms-3 small">${jrnlList}</ul>
+                        <h6 class="fw-bold mt-3"><i class="fas fa-brain text-primary me-1"></i> Skor Kompetensi</h6><div class="bg-light p-2 rounded border">${compHtml}</div>
+                    </div>`,
+                width: 600, confirmButtonText: 'Tutup', confirmButtonColor: '#1A1A1A'
+            });
+        }
+
+        // Expert Journals
+        let journalModalInst; let allExpertsForJournal = [];
+        function renderJournalsTable() {
+            const jrnls = getDB(DB_KEY_JRN); const emps = getDB(DB_KEY_EMP); const searchVal = (document.getElementById('searchJournal')?.value || '').toLowerCase(); const tbody = document.querySelector('#tblJournals tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            let html = '';
+            jrnls.forEach(j => {
+                let emp = emps.find(e => e.nrp === j.nrp); let empName = emp ? emp.nama : j.nrp;
+                if (empName.toLowerCase().includes(searchVal) || j.nrp.toLowerCase().includes(searchVal)) {
+                    let badgeColor = j.level.includes('Internasional') ? 'bg-primary text-dark' : (j.level.includes('SINTA') ? 'bg-success' : 'bg-dark text-white');
+                    let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delJournal('${j.id}')"><i class="fas fa-trash"></i></button>` : '-';
+                    html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${j.nrp}</small></td><td class="fw-medium">${j.title}</td><td><span class="badge ${badgeColor}">${j.level}</span></td><td>${j.date}</td><td class="edit-allowed text-center" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
+                }
+            });
+            tbody.innerHTML = html || `<tr><td colspan="5" class="text-center py-4 text-muted">Belum ada jurnal dipublikasi</td></tr>`;
+        }
+        function openJournalModal() { document.getElementById('formJournal').reset(); document.getElementById('jrnSearchExpertInput').value = ''; allExpertsForJournal = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateJournalDropdown(allExpertsForJournal); if(!journalModalInst) journalModalInst = new bootstrap.Modal(document.getElementById('modalJournal')); journalModalInst.show(); }
+        function populateJournalDropdown(experts) { const select = document.getElementById('jrnNrp'); select.innerHTML = ''; experts.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
+        function filterJournalExperts() { const searchVal = document.getElementById('jrnSearchExpertInput').value.toLowerCase(); const filtered = allExpertsForJournal.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateJournalDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('jrnNrp').value = filtered[0].nrp; } }
+        function saveJournal() { let jrnls = getDB(DB_KEY_JRN); jrnls.push({ id: 'JRN' + Date.now(), nrp: document.getElementById('jrnNrp').value, title: document.getElementById('jrnTitle').value, level: document.getElementById('jrnLevel').value, date: document.getElementById('jrnDate').value }); saveDB(DB_KEY_JRN, jrnls); journalModalInst.hide(); customSwal('Tersimpan', 'Jurnal berhasil direkam', 'success'); renderJournalsTable(); if(document.getElementById('view-expertprofile').classList.contains('active')) renderExpertProfileTable(); }
+        function delJournal(id) { saveDB(DB_KEY_JRN, getDB(DB_KEY_JRN).filter(j => j.id !== id)); renderJournalsTable(); }
+
+        // Expert Competency
+        let competencyModalInst; let allExpertsForCompetency = [];
+        function renderCompetencyTable() {
+            const comps = getDB(DB_KEY_COMP); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblCompetency tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            let html = '';
+            comps.forEach(c => {
+                let emp = emps.find(e => e.nrp === c.nrp);
+                if(emp) {
+                    let total = parseFloat(c.tech) + parseFloat(c.inno) + parseFloat(c.ana) + parseFloat(c.plan) + parseFloat(c.comm) + parseFloat(c.drive); let avg = (total / 6).toFixed(2);
+                    let action = canEdit ? `<button class="btn btn-sm btn-outline-dark fw-bold" onclick="editCompetency('${c.nrp}')"><i class="fas fa-edit text-primary me-1"></i> Edit</button>` : '-';
+                    html += `<tr><td><strong>${emp.nama}</strong><br><span class="badge bg-light text-dark border">${c.nrp} - ${emp.pilar}</span></td><td class="text-center">${c.tech}</td><td class="text-center">${c.inno}</td><td class="text-center">${c.ana}</td><td class="text-center">${c.plan}</td><td class="text-center">${c.comm}</td><td class="text-center">${c.drive}</td><td class="text-center fw-black fs-6">${avg}</td><td class="edit-allowed text-center" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
+                }
+            });
+            tbody.innerHTML = html || `<tr><td colspan="9" class="text-center py-4 text-muted">Belum ada skor evaluasi</td></tr>`;
+        }
+        function openCompetencyModal() { document.getElementById('formCompetency').reset(); document.getElementById('compSearchExpertInput').value = ''; allExpertsForCompetency = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateCompetencyDropdown(allExpertsForCompetency); populateCompetencyScores(); if(!competencyModalInst) competencyModalInst = new bootstrap.Modal(document.getElementById('modalCompetency')); competencyModalInst.show(); }
+        function populateCompetencyDropdown(experts) { const select = document.getElementById('compNrp'); select.innerHTML = ''; experts.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
+        function filterCompetencyExperts() { const searchVal = document.getElementById('compSearchExpertInput').value.toLowerCase(); const filtered = allExpertsForCompetency.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateCompetencyDropdown(filtered); if(filtered.length > 0) { if(filtered.length === 1 && searchVal !== '') { document.getElementById('compNrp').value = filtered[0].nrp; } populateCompetencyScores(); } }
+        function populateCompetencyScores() {
+            let nrp = document.getElementById('compNrp').value; let comp = getDB(DB_KEY_COMP).find(c => c.nrp === nrp);
+            if(comp) { document.getElementById('compTech').value = comp.tech; document.getElementById('compInno').value = comp.inno; document.getElementById('compAna').value = comp.ana; document.getElementById('compPlan').value = comp.plan; document.getElementById('compComm').value = comp.comm; document.getElementById('compDrive').value = comp.drive; } 
+            else { ['compTech','compInno','compAna','compPlan','compComm','compDrive'].forEach(id => document.getElementById(id).value = '3.0'); }
+        }
+        function editCompetency(nrp) { allExpertsForCompetency = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateCompetencyDropdown(allExpertsForCompetency); document.getElementById('compNrp').value = nrp; populateCompetencyScores(); if(!competencyModalInst) competencyModalInst = new bootstrap.Modal(document.getElementById('modalCompetency')); competencyModalInst.show(); }
+        function saveCompetency() {
+            let nrp = document.getElementById('compNrp').value; let comps = getDB(DB_KEY_COMP); let idx = comps.findIndex(c => c.nrp === nrp);
+            let data = { nrp: nrp, tech: document.getElementById('compTech').value, inno: document.getElementById('compInno').value, ana: document.getElementById('compAna').value, plan: document.getElementById('compPlan').value, comm: document.getElementById('compComm').value, drive: document.getElementById('compDrive').value };
+            if(idx > -1) comps[idx] = data; else comps.push(data); saveDB(DB_KEY_COMP, comps); competencyModalInst.hide(); customSwal('Tersimpan', 'Evaluasi telah direkam.', 'success'); renderCompetencyTable();
+        }
+
+        // Reports
+        function generateReport() {
+            const pilar = document.getElementById('reportFilterPilar').value; const emps = getDB(DB_KEY_EMP); const projs = getDB(DB_KEY_PROJ); const trns = getDB(DB_KEY_TRN); const certs = getDB(DB_KEY_CERT);
+            let filtered = pilar !== 'ALL' ? emps.filter(e => e.pilar === pilar) : emps;
+            let html = '';
+            filtered.forEach(e => {
+                let empProjs = projs.filter(p => p.nrp === e.nrp).length; let empTrns = trns.filter(t => t.nrp === e.nrp).length; let empCerts = certs.filter(c => c.nrp === e.nrp).length;
+                html += `<tr><td><strong>${e.nrp}</strong></td><td class="fw-medium">${e.nama}</td><td><span class="badge bg-dark text-warning">${e.pilar}</span></td><td>${e.golongan}</td><td>${e.tahun}</td><td class="text-center">${empProjs}</td><td class="text-center">${empTrns}</td><td class="text-center">${empCerts}</td></tr>`;
+            });
+            document.querySelector('#tblReport tbody').innerHTML = html || '<tr><td colspan="8" class="text-center py-4">Data tidak ditemukan</td></tr>';
+        }
+
+        // User Accounts
+        let userModalInst;
+        function renderUsers() {
+            const users = getDB(DB_KEY_USR); const tbody = document.querySelector('#tblUsers tbody'); let html = '';
+            users.forEach((u, i) => { html += `<tr><td class="fw-bold">${u.username}</td><td><span class="badge border border-dark text-dark">${u.role.toUpperCase()}</span></td><td><span class="badge ${u.active ? 'bg-success' : 'bg-danger'}">${u.active ? 'Aktif' : 'Non-aktif'}</span></td><td class="text-center"><button class="btn btn-sm btn-outline-dark fw-bold" onclick="toggleUser(${i})"><i class="fas fa-power-off text-danger"></i></button></td></tr>`; });
+            tbody.innerHTML = html;
+        }
+        function openUserModal() { document.getElementById('formUser').reset(); document.getElementById('usrId').value = ''; if(!userModalInst) userModalInst = new bootstrap.Modal(document.getElementById('modalUser')); userModalInst.show(); }
+        function saveUser() {
+            let users = getDB(DB_KEY_USR); let u = document.getElementById('usrName').value.trim(); let p = document.getElementById('usrPass').value; let r = document.getElementById('usrRole').value;
+            if(users.find(x => x.username === u)) return customSwal('Error', 'Username sudah terpakai', 'error');
+            users.push({username: u, password: p, role: r, active: true}); saveDB(DB_KEY_USR, users); userModalInst.hide(); renderUsers(); customSwal('Sukses', 'Akun berhasil dibuat', 'success');
+        }
+        function toggleUser(idx) {
+            let users = getDB(DB_KEY_USR); if(users[idx].username === 'admin') return customSwal('Ditolak', 'Akun Master Admin tidak dapat dimatikan.', 'error');
+            users[idx].active = !users[idx].active; saveDB(DB_KEY_USR, users); renderUsers();
+        }
+
+        // EXCEL IMPORTS & EXPORTS
+        function downloadTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'Nama', 'TanggalLahir(YYYY-MM-DD)', 'Golongan', 'Pilar', 'Tahun', 'Status(Active/Inactive)']]), "Employees"); XLSX.writeFile(wb, "Template_Karyawan_UT.xlsx"); }
+        function downloadTrainingTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'TrainingName', 'Provider', 'Date(YYYY-MM-DD)', 'Score', 'Status(Passed/Failed/Ongoing)']]), "Training"); XLSX.writeFile(wb, "Template_Training_UT.xlsx"); }
+        function downloadCertificationTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'CertificationName', 'Provider', 'Date(YYYY-MM-DD)', 'Score/Grade', 'Status(Active/Expired/In Progress)']]), "Certification"); XLSX.writeFile(wb, "Template_Cert_UT.xlsx"); }
+        function downloadCompetencyTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'Technical', 'Innovation', 'Analysis', 'Planning', 'Communication', 'Drive']]), "Competency"); XLSX.writeFile(wb, "Template_Comp_UT.xlsx"); }
+        function downloadJournalTemplate() { const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet([['NRP', 'Journal Title', 'Publication Level', 'Date(YYYY-MM-DD)']]); XLSX.utils.sheet_add_aoa(ws, [['EMP1001', 'Inovasi Alat Berat', 'Internasional', '2023-10-12']], {origin: 1}); XLSX.utils.book_append_sheet(wb, ws, "Journals"); XLSX.writeFile(wb, "Template_Jurnal_UT.xlsx"); }
+        
+        function parseExcelDate(serial) { if (typeof serial === 'number') { return new Date((Math.floor(serial - 25569) * 86400) * 1000).toISOString().split('T')[0]; } if (typeof serial === 'string') { let d = new Date(serial); if(!isNaN(d.getTime())) return d.toISOString().split('T')[0]; } return serial || '1990-01-01'; }
+
+        // The generalized import handler logic (simplified mapped arrays for brevity)
+        function handleImportExcel(e) { processExcel(e, data => { let emps = getDB(DB_KEY_EMP); let added = 0; data.forEach(row => { if(row.NRP && row.Nama && !emps.find(x => x.nrp === String(row.NRP))) { emps.push({ nrp: String(row.NRP), nama: row.Nama, tglLahir: parseExcelDate(row['TanggalLahir(YYYY-MM-DD)'] || row['Tanggal Lahir'] || '1990-01-01'), golongan: row.Golongan || '3', pilar: row.Pilar || 'AE', tahun: (typeof row.Tahun === 'number' && row.Tahun > 10000) ? new Date(Math.round((row.Tahun - 25569) * 86400 * 1000)).getFullYear() : (row.Tahun ? String(row.Tahun).substring(0, 4) : new Date().getFullYear()), status: row['Status(Active/Inactive)'] || 'Active', created: new Date().toISOString() }); added++; } }); saveDB(DB_KEY_EMP, emps); renderEmpTable(); customSwal('Import Selesai', `${added} data ditambahkan.`, 'success'); }); }
+        function handleImportTrainingExcel(e) { processExcel(e, data => { let trns = getDB(DB_KEY_TRN); data.forEach(row => { if(row.NRP && row.TrainingName) trns.push({ id: 'TRN' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.TrainingName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row.Score || '', status: row['Status(Passed/Failed/Ongoing)'] || 'Passed' }); }); saveDB(DB_KEY_TRN, trns); renderTrainingTable(); customSwal('Berhasil', 'Data training dimasukkan', 'success'); }); }
+        function handleImportCertificationExcel(e) { processExcel(e, data => { let certs = getDB(DB_KEY_CERT); data.forEach(row => { if(row.NRP && row.CertificationName) certs.push({ id: 'CRT' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.CertificationName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row['Score/Grade'] || '', status: row['Status(Active/Expired/In Progress)'] || 'Active' }); }); saveDB(DB_KEY_CERT, certs); renderCertificationTable(); customSwal('Berhasil', 'Data sertifikat dimasukkan', 'success'); }); }
+        function handleImportJournalExcel(e) { processExcel(e, data => { let jrnls = getDB(DB_KEY_JRN); data.forEach(row => { if(row.NRP && row['Journal Title']) jrnls.push({ id: 'JRN' + Date.now() + Math.random(), nrp: String(row.NRP), title: row['Journal Title'], level: row['Publication Level'] || 'Nasional', date: typeof row['Date(YYYY-MM-DD)']==='number' ? parseExcelDate(row['Date(YYYY-MM-DD)']) : row['Date(YYYY-MM-DD)'] }); }); saveDB(DB_KEY_JRN, jrnls); renderJournalsTable(); customSwal('Berhasil', 'Data jurnal dimasukkan', 'success'); }); }
+        function handleImportCompetencyExcel(e) { processExcel(e, data => { let comps = getDB(DB_KEY_COMP); data.forEach(row => { if(row.NRP) { let compData = { nrp: String(row.NRP), tech: row.Technical||3, inno: row.Innovation||3, ana: row.Analysis||3, plan: row.Planning||3, comm: row.Communication||3, drive: row.Drive||3 }; let idx = comps.findIndex(c => c.nrp === String(row.NRP)); if(idx > -1) comps[idx] = compData; else comps.push(compData); } }); saveDB(DB_KEY_COMP, comps); renderCompetencyTable(); customSwal('Berhasil', 'Skor kompetensi diperbarui', 'success'); }); }
+        
+        function processExcel(e, callback) {
+            const file = e.target.files[0]; if(!file) return;
+            const r = new FileReader(); r.onload = (evt) => { callback(XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, {type:'binary'}).Sheets[XLSX.read(evt.target.result, {type:'binary'}).SheetNames[0]])); e.target.value = ''; }; r.readAsBinaryString(file);
+        }
+
+        function exportReportExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tblReport'), {sheet:"Report"}), "HRMS_Report_UT.xlsx"); }
+        function exportJournalPDF() {
+            const doc = new window.jspdf.jsPDF(); doc.setFontSize(16); doc.text("Laporan Jurnal Publikasi Expert", 14, 22); doc.setFontSize(10); doc.text("Sistem HRMS | Diekstrak pada: " + new Date().toLocaleDateString(), 14, 28);
+            const emps = getDB(DB_KEY_EMP);
+            doc.autoTable({ startY: 34, head: [['NRP', 'Nama Expert', 'Judul Jurnal', 'Level Publikasi', 'Tgl Rilis']], body: getDB(DB_KEY_JRN).map(j => { let e = emps.find(x => x.nrp === j.nrp); return [j.nrp, e ? e.nama : j.nrp, j.title, j.level, j.date]; }), theme: 'grid', headStyles: { fillColor: [26, 26, 26], textColor: [255, 192, 0] } }); doc.save('Jurnal_Expert_UT.pdf');
+        }
+        function exportCompetencyPDF() {
+            const doc = new window.jspdf.jsPDF('landscape'); doc.setFontSize(16); doc.text("Laporan Evaluasi Kompetensi Expert", 14, 22); doc.setFontSize(10); doc.text("Sistem HRMS | Diekstrak pada: " + new Date().toLocaleDateString(), 14, 28);
+            const emps = getDB(DB_KEY_EMP);
+            doc.autoTable({ startY: 34, head: [['Nama Expert', 'Technical', 'Innovation', 'Analysis', 'Planning', 'Comm', 'Drive', 'Skor Rata-rata']], body: getDB(DB_KEY_COMP).map(c => { let e = emps.find(x => x.nrp === c.nrp); return [e ? e.nama : c.nrp, c.tech, c.inno, c.ana, c.plan, c.comm, c.drive, ((parseFloat(c.tech)+parseFloat(c.inno)+parseFloat(c.ana)+parseFloat(c.plan)+parseFloat(c.comm)+parseFloat(c.drive))/6).toFixed(2)]; }), theme: 'grid', headStyles: { fillColor: [26, 26, 26], textColor: [255, 192, 0] } }); doc.save('Kompetensi_Expert_UT.pdf');
+        }
+
+        // Settings
+        function resetDatabase() {
+            Swal.fire({ title: 'KEMBALIKAN KE PENGATURAN AWAL?', text: "Semua data akan hilang. Ketik 'RESET' untuk mengonfirmasi.", input: 'text', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eksekusi'
+            }).then((res) => { if (res.value === 'RESET') { localStorage.clear(); initDB(); customSwal('Selesai', 'Sistem dikembalikan ke Data Dummy pabrik.', 'success').then(() => { logout(); }); } else if(res.value) { customSwal('Batal', 'Kata kunci salah.', 'error'); } });
+        }
+
+        window.onload = () => { initDB(); };
+
+    </script>
+</body>
+</html>
