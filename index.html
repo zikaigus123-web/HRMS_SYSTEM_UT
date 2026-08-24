@@ -834,8 +834,8 @@
                         <div class="mb-3 bg-light p-3 rounded border border-warning">
                             <label class="form-label fw-bold">Ubah Menjadi Status</label>
                             <select class="form-select border-dark" id="usStatus" onchange="document.getElementById('usReasonDiv').style.display = this.value === 'Inactive' ? 'block' : 'none'">
-                                <option value="Active">🟢 Active (Aktif Bekerja)</option>
-                                <option value="Inactive">🔴 Inactive (Non-aktif)</option>
+                                <option value="Active">泙 Active (Aktif Bekerja)</option>
+                                <option value="Inactive">閥 Inactive (Non-aktif)</option>
                             </select>
                         </div>
                         <div class="mb-3" id="usReasonDiv" style="display: none;">
@@ -903,8 +903,7 @@
         </div>
     </div>
 
-    <!-- Modal Training, Certification, User, Journal, Competency (Simplified wrappers for code brevity but styled consistently) -->
-    <!-- Note: Keeping identical inner logic, updating only header/button classes to match UT Theme -->
+    <!-- Modal Training, Certification, User, Journal, Competency -->
     
     <div class="modal fade" id="modalTraining" tabindex="-1">
         <div class="modal-dialog">
@@ -1015,7 +1014,7 @@
         const DB_KEY_JRN = 'hrms_journals';
         const DB_KEY_COMP = 'hrms_competency';
 
-       // Mapping kunci identitas untuk Spreadsheet (Sudah diperbaiki case-sensitive nya)
+       // Mapping kunci identitas untuk Spreadsheet
         const DB_MAP = {
             [DB_KEY_USR]: { sheet: 'Users', key: 'username' },
             [DB_KEY_EMP]: { sheet: 'Employees', key: 'nrp' },
@@ -1294,7 +1293,7 @@
             table.innerHTML = html;
         }
 
-        // --- CRUD LOGIC WRAPPERS (Preserving existing logic, updating SweetAlert aesthetics) ---
+        // --- CRUD LOGIC WRAPPERS ---
         
         function customSwal(title, text, icon) {
             Swal.fire({ title: title, text: text, icon: icon, confirmButtonColor: '#1A1A1A' });
@@ -1396,7 +1395,7 @@
         }
         function populateUpdateStatusDropdown(employees) {
             const select = document.getElementById('usNrp'); select.innerHTML = '<option value="">-- Pilih Karyawan --</option>';
-            employees.forEach(e => { let statusInd = e.status === 'Active' ? '🟢' : '🔴'; select.innerHTML += `<option value="${e.nrp}">${statusInd} ${e.nrp} - ${e.nama} (${e.status})</option>`; });
+            employees.forEach(e => { let statusInd = e.status === 'Active' ? '泙' : '閥'; select.innerHTML += `<option value="${e.nrp}">${statusInd} ${e.nrp} - ${e.nama} (${e.status})</option>`; });
         }
         function filterUpdateStatusEmployees() {
             const searchVal = document.getElementById('usSearchEmployeeInput').value.toLowerCase();
@@ -1721,7 +1720,8 @@
             users[idx].active = !users[idx].active; saveDB(DB_KEY_USR, users); renderUsers();
         }
 
-        // EXCEL IMPORTS & EXPORTS
+        // PENGELOLAAN EXCEL IMPORTS (Terkoneksi dengan Google Apps Script)
+        
         function downloadTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'Nama', 'TanggalLahir(YYYY-MM-DD)', 'Golongan', 'Pilar', 'Tahun', 'Status(Active/Inactive)']]), "Employees"); XLSX.writeFile(wb, "Template_Karyawan_UT.xlsx"); }
         function downloadTrainingTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'TrainingName', 'Provider', 'Date(YYYY-MM-DD)', 'Score', 'Status(Passed/Failed/Ongoing)']]), "Training"); XLSX.writeFile(wb, "Template_Training_UT.xlsx"); }
         function downloadCertificationTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'CertificationName', 'Provider', 'Date(YYYY-MM-DD)', 'Score/Grade', 'Status(Active/Expired/In Progress)']]), "Certification"); XLSX.writeFile(wb, "Template_Cert_UT.xlsx"); }
@@ -1730,16 +1730,29 @@
         
         function parseExcelDate(serial) { if (typeof serial === 'number') { return new Date((Math.floor(serial - 25569) * 86400) * 1000).toISOString().split('T')[0]; } if (typeof serial === 'string') { let d = new Date(serial); if(!isNaN(d.getTime())) return d.toISOString().split('T')[0]; } return serial || '1990-01-01'; }
 
-        // The generalized import handler logic (simplified mapped arrays for brevity)
         function handleImportExcel(e) { processExcel(e, data => { let emps = getDB(DB_KEY_EMP); let added = 0; data.forEach(row => { if(row.NRP && row.Nama && !emps.find(x => x.nrp === String(row.NRP))) { emps.push({ nrp: String(row.NRP), nama: row.Nama, tglLahir: parseExcelDate(row['TanggalLahir(YYYY-MM-DD)'] || row['Tanggal Lahir'] || '1990-01-01'), golongan: row.Golongan || '3', pilar: row.Pilar || 'AE', tahun: (typeof row.Tahun === 'number' && row.Tahun > 10000) ? new Date(Math.round((row.Tahun - 25569) * 86400 * 1000)).getFullYear() : (row.Tahun ? String(row.Tahun).substring(0, 4) : new Date().getFullYear()), status: row['Status(Active/Inactive)'] || 'Active', created: new Date().toISOString() }); added++; } }); saveDB(DB_KEY_EMP, emps); renderEmpTable(); customSwal('Import Selesai', `${added} data ditambahkan.`, 'success'); }); }
-        function handleImportTrainingExcel(e) { processExcel(e, data => { let trns = getDB(DB_KEY_TRN); data.forEach(row => { if(row.NRP && row.TrainingName) trns.push({ id: 'TRN' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.TrainingName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row.Score || '', status: row['Status(Passed/Failed/Ongoing)'] || 'Passed' }); }); saveDB(DB_KEY_TRN, trns); renderTrainingTable(); customSwal('Berhasil', 'Data training dimasukkan', 'success'); }); }
-        function handleImportCertificationExcel(e) { processExcel(e, data => { let certs = getDB(DB_KEY_CERT); data.forEach(row => { if(row.NRP && row.CertificationName) certs.push({ id: 'CRT' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.CertificationName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row['Score/Grade'] || '', status: row['Status(Active/Expired/In Progress)'] || 'Active' }); }); saveDB(DB_KEY_CERT, certs); renderCertificationTable(); customSwal('Berhasil', 'Data sertifikat dimasukkan', 'success'); }); }
-        function handleImportJournalExcel(e) { processExcel(e, data => { let jrnls = getDB(DB_KEY_JRN); data.forEach(row => { if(row.NRP && row['Journal Title']) jrnls.push({ id: 'JRN' + Date.now() + Math.random(), nrp: String(row.NRP), title: row['Journal Title'], level: row['Publication Level'] || 'Nasional', date: typeof row['Date(YYYY-MM-DD)']==='number' ? parseExcelDate(row['Date(YYYY-MM-DD)']) : row['Date(YYYY-MM-DD)'] }); }); saveDB(DB_KEY_JRN, jrnls); renderJournalsTable(); customSwal('Berhasil', 'Data jurnal dimasukkan', 'success'); }); }
-        function handleImportCompetencyExcel(e) { processExcel(e, data => { let comps = getDB(DB_KEY_COMP); data.forEach(row => { if(row.NRP) { let compData = { nrp: String(row.NRP), tech: row.Technical||3, inno: row.Innovation||3, ana: row.Analysis||3, plan: row.Planning||3, comm: row.Communication||3, drive: row.Drive||3 }; let idx = comps.findIndex(c => c.nrp === String(row.NRP)); if(idx > -1) comps[idx] = compData; else comps.push(compData); } }); saveDB(DB_KEY_COMP, comps); renderCompetencyTable(); customSwal('Berhasil', 'Skor kompetensi diperbarui', 'success'); }); }
+        
+        function handleImportTrainingExcel(e) { processExcel(e, data => { let trns = getDB(DB_KEY_TRN); let added = 0; data.forEach(row => { if(row.NRP && row.TrainingName) { trns.push({ id: 'TRN' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.TrainingName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row.Score || '', status: row['Status(Passed/Failed/Ongoing)'] || 'Passed' }); added++; } }); saveDB(DB_KEY_TRN, trns); renderTrainingTable(); customSwal('Berhasil', `${added} Data training dimasukkan`, 'success'); }); }
+        
+        function handleImportCertificationExcel(e) { processExcel(e, data => { let certs = getDB(DB_KEY_CERT); let added = 0; data.forEach(row => { if(row.NRP && row.CertificationName) { certs.push({ id: 'CRT' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.CertificationName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row['Score/Grade'] || '', status: row['Status(Active/Expired/In Progress)'] || 'Active' }); added++; } }); saveDB(DB_KEY_CERT, certs); renderCertificationTable(); customSwal('Berhasil', `${added} Data sertifikat dimasukkan`, 'success'); }); }
+        
+        function handleImportJournalExcel(e) { processExcel(e, data => { let jrnls = getDB(DB_KEY_JRN); let added = 0; data.forEach(row => { if(row.NRP && row['Journal Title']) { jrnls.push({ id: 'JRN' + Date.now() + Math.random(), nrp: String(row.NRP), title: row['Journal Title'], level: row['Publication Level'] || 'Nasional', date: typeof row['Date(YYYY-MM-DD)']==='number' ? parseExcelDate(row['Date(YYYY-MM-DD)']) : row['Date(YYYY-MM-DD)'] }); added++; } }); saveDB(DB_KEY_JRN, jrnls); renderJournalsTable(); customSwal('Berhasil', `${added} Data jurnal dimasukkan`, 'success'); }); }
+        
+        function handleImportCompetencyExcel(e) { processExcel(e, data => { let comps = getDB(DB_KEY_COMP); let added = 0; data.forEach(row => { if(row.NRP) { let compData = { nrp: String(row.NRP), tech: row.Technical||3, inno: row.Innovation||3, ana: row.Analysis||3, plan: row.Planning||3, comm: row.Communication||3, drive: row.Drive||3 }; let idx = comps.findIndex(c => c.nrp === String(row.NRP)); if(idx > -1) comps[idx] = compData; else comps.push(compData); added++; } }); saveDB(DB_KEY_COMP, comps); renderCompetencyTable(); customSwal('Berhasil', `${added} Skor kompetensi diperbarui`, 'success'); }); }
         
         function processExcel(e, callback) {
             const file = e.target.files[0]; if(!file) return;
-            const r = new FileReader(); r.onload = (evt) => { callback(XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, {type:'binary'}).Sheets[XLSX.read(evt.target.result, {type:'binary'}).SheetNames[0]])); e.target.value = ''; }; r.readAsBinaryString(file);
+            // Tampilkan notifikasi loading saat membaca file Excel
+            Swal.fire({ title: 'Membaca File...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => { Swal.showLoading() } });
+            
+            const r = new FileReader(); 
+            r.onload = (evt) => { 
+               // Tutup loading setelah file selesai dibaca
+               Swal.close();
+               callback(XLSX.utils.sheet_to_json(XLSX.read(evt.target.result, {type:'binary'}).Sheets[XLSX.read(evt.target.result, {type:'binary'}).SheetNames[0]])); 
+               e.target.value = ''; 
+            }; 
+            r.readAsBinaryString(file);
         }
 
         function exportReportExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById('tblReport'), {sheet:"Report"}), "HRMS_Report_UT.xlsx"); }
