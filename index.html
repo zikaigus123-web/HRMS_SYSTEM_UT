@@ -1003,7 +1003,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // --- DATABASE MODULE ---
+   // --- DATABASE MODULE (Google Sheets API Integration) ---
+        // GANTI URL DI BAWAH DENGAN URL WEB APP GOOGLE APPS SCRIPT KAMU
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyuNHdJ2QPqZqeZvoVnpSjdiYplmPwEYY_gV7pVTm_-1eQeinK70JN4Zi8uLDnBMA0O/exec'; 
+
         const DB_KEY_EMP = 'hrms_employees';
         const DB_KEY_USR = 'hrms_users';
         const DB_KEY_PROJ = 'hrms_project'; 
@@ -1011,67 +1014,84 @@
         const DB_KEY_CERT = 'hrms_certification';
         const DB_KEY_JRN = 'hrms_journals';
         const DB_KEY_COMP = 'hrms_competency';
+
+        // Mapping kunci identitas untuk Spreadsheet
+        const DB_MAP = {
+            [DB_KEY_USR]: { sheet: 'Users', key: 'Username' },
+            [DB_KEY_EMP]: { sheet: 'Employees', key: 'NRP' },
+            [DB_KEY_PROJ]: { sheet: 'Projects', key: 'id' },
+            [DB_KEY_TRN]: { sheet: 'Training', key: 'id' },
+            [DB_KEY_CERT]: { sheet: 'Certification', key: 'id' },
+            [DB_KEY_JRN]: { sheet: 'Journals', key: 'id' },
+            [DB_KEY_COMP]: { sheet: 'Competency', key: 'NRP' }
+        };
         
+        let localDB = {};
         let currentUser = null;
         let chartInstances = {};
 
-        function initDB() {
-            if (!localStorage.getItem(DB_KEY_USR)) {
-                localStorage.setItem(DB_KEY_USR, JSON.stringify([
-                    { username: 'admin', password: 'admin123', role: 'admin', active: true },
-                    { username: 'hr', password: 'hr123', role: 'hr', active: true },
-                    { username: 'viewer', password: '123', role: 'viewer', active: true }
-                ]));
+        // Mengambil data dari Spreadsheet saat halaman pertama dimuat
+        async function initDB() {
+            const loginBtn = document.querySelector('#loginForm button[type="submit"]');
+            if(loginBtn) {
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> MENGHUBUNGKAN KE SERVER...';
             }
-            if (!localStorage.getItem(DB_KEY_EMP)) generateDummyData();
-            if (!localStorage.getItem(DB_KEY_PROJ)) localStorage.setItem(DB_KEY_PROJ, JSON.stringify([]));
-            if (!localStorage.getItem(DB_KEY_TRN)) localStorage.setItem(DB_KEY_TRN, JSON.stringify([]));
-            if (!localStorage.getItem(DB_KEY_CERT)) localStorage.setItem(DB_KEY_CERT, JSON.stringify([]));
-            if (!localStorage.getItem(DB_KEY_JRN)) localStorage.setItem(DB_KEY_JRN, JSON.stringify([]));
-            if (!localStorage.getItem(DB_KEY_COMP)) localStorage.setItem(DB_KEY_COMP, JSON.stringify([]));
+            
+            try {
+                let res = await fetch(SCRIPT_URL + '?action=getAllData');
+                let result = await res.json();
+                
+                if (result.status === "success") {
+                    localDB[DB_KEY_USR] = result.data.users || [];
+                    localDB[DB_KEY_EMP] = result.data.employees || [];
+                    localDB[DB_KEY_PROJ] = result.data.projects || [];
+                    localDB[DB_KEY_TRN] = result.data.training || [];
+                    localDB[DB_KEY_CERT] = result.data.certification || [];
+                    localDB[DB_KEY_JRN] = result.data.journals || [];
+                    localDB[DB_KEY_COMP] = result.data.competency || [];
+                    
+                    if(loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = 'MASUK KE SISTEM <i class="fas fa-arrow-right ms-2"></i>';
+                    }
+                }
+            } catch (error) {
+                console.error("Gagal memuat data dari Spreadsheet:", error);
+                Swal.fire('Koneksi Gagal', 'Pastikan URL Web App Google Apps Script sudah benar.', 'error');
+                if(loginBtn) loginBtn.innerHTML = 'COBA LAGI';
+            }
         }
 
-        function getDB(key) { return JSON.parse(localStorage.getItem(key)) || []; }
-        function saveDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+        function getDB(key) { return localDB[key] || []; }
 
-        function generateDummyData() {
-            const pilars = ['PRE', 'TPSE', 'TCDE', 'PSC', 'AE'];
-            const names = ['Budi Santoso', 'Siti Aminah', 'Agus Supriyanto', 'Rina Wati', 'Joko Widodo', 'Sri Wahyuni', 'Hendro Siswanto', 'Maria Ulfa', 'Eko Prasetyo', 'Nurul Hidayah', 'Arif Rahman', 'Dewi Lestari', 'Rudi Hermawan', 'Fitriani', 'Bambang Pamungkas', 'Endang Sulistyowati', 'Dwi Yulianto', 'Ratna Sari', 'Iwan Fals', 'Lilis Suryani', 'Ahmad Dahlan', 'Kartini', 'Hasan Basri', 'Megawati', 'Reza Rahadian', 'Dian Sastro', 'Tora Sudiro', 'Luna Maya', 'Vino Bastian', 'Raisa Andriana'];
-            const golongansList = ['3', '4AD', '4EF', '5AB', '5CD'];
+        // Fungsi pintar yang mengirimkan data baru, update, atau hapus ke GAS
+        function saveDB(key, newData) {
+            let oldData = localDB[key] || [];
+            localDB[key] = newData; // Update memori lokal agar UI langsung berubah (Responsive)
             
-            let emps = []; let projs = []; let trns = []; let certs = []; let jrnls = []; let comps = [];
+            // Logika Hapus Semua Data
+            if (newData.length === 0 && oldData.length > 0) {
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteAll", sheetName: DB_MAP[key].sheet }) });
+                return;
+            }
+
+            let keyField = DB_MAP[key].key;
+            let oldKeys = oldData.map(x => String(x[keyField]));
+            let newKeys = newData.map(x => String(x[keyField]));
             
-            for(let i=0; i<30; i++) {
-                let nrp = 'EMP' + (1001 + i);
-                let tahun = Math.floor(Math.random() * (2023 - 2010 + 1)) + 2010;
-                let byear = 1960 + Math.floor(Math.random() * 45); 
-                let birthMonth = (Math.floor(Math.random() * 12) + 1).toString().padStart(2, '0');
-                let birthDay = (Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0');
-                let pilar = pilars[Math.floor(Math.random() * pilars.length)];
-                
-                emps.push({
-                    nrp: nrp, nama: names[i], tglLahir: `${byear}-${birthMonth}-${birthDay}`,
-                    golongan: golongansList[Math.floor(Math.random() * golongansList.length)],
-                    pilar: pilar, tahun: tahun, status: 'Active', created: new Date().toISOString()
-                });
-                
-                if(i % 3 === 0) projs.push({ id: 'PRJ' + Date.now() + i, nrp: nrp, title: 'Project Inovasi ' + pilar + ' ' + (i+1), startDate: '2024-01-01', endDate: '2024-12-31' });
-                
-                if(i % 2 === 0) {
-                    trns.push({ id: 'TRN' + Date.now() + i, nrp: nrp, name: 'Advanced ' + pilar + ' Training', provider: 'BNSP', date: '2023-01-10', score: Math.floor(Math.random() * 40) + 60, status: 'Passed' });
-                    certs.push({ id: 'CRT' + Date.now() + i, nrp: nrp, name: 'Certified ' + pilar + ' Expert', provider: 'Global Cert', date: '2023-05-15', score: 'A', status: 'Active' });
-                }
-
-                if(i % 4 === 0) jrnls.push({ id: 'JRN' + Date.now() + i, nrp: nrp, title: 'Study on ' + pilar + ' Optimization', level: 'Nasional', date: '2023-11-20' });
-
-                comps.push({
-                    nrp: nrp, tech: (Math.random() * 2 + 3).toFixed(1), inno: (Math.random() * 2 + 3).toFixed(1),
-                    ana: (Math.random() * 2 + 3).toFixed(1), plan: (Math.random() * 2 + 3).toFixed(1),
-                    comm: (Math.random() * 2 + 3).toFixed(1), drive: (Math.random() * 2 + 3).toFixed(1)
+            // Cek jika ada baris data yang dihapus
+            let deletedKeys = oldKeys.filter(k => !newKeys.includes(k));
+            if (deletedKeys.length > 0) {
+                deletedKeys.forEach(dk => {
+                    fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "delete", sheetName: DB_MAP[key].sheet, keyField: keyField, keyValue: dk }) });
                 });
             }
-            saveDB(DB_KEY_EMP, emps); saveDB(DB_KEY_PROJ, projs); saveDB(DB_KEY_TRN, trns);
-            saveDB(DB_KEY_CERT, certs); saveDB(DB_KEY_JRN, jrnls); saveDB(DB_KEY_COMP, comps);
+            
+            // Cek jika ada data baru atau update (Upsert)
+            if (newData.length > 0) {
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "upsert", sheetName: DB_MAP[key].sheet, keyField: keyField, data: newData }) });
+            }
         }
 
         // --- LOGIN & ROUTING ---
