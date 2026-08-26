@@ -881,7 +881,7 @@
         </div>
     </div>
 
-    <!-- Modal Project (Styling matched to theme) -->
+    <!-- Modal Project -->
     <div class="modal fade" id="modalProject" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -1379,9 +1379,10 @@
             const emps = getDB(DB_KEY_EMP);
             const searchVal = (document.getElementById('searchEmp')?.value || '').toLowerCase();
             const tbody = document.querySelector('#tblEmployee tbody');
-            const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            const canEdit = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr'));
             
-            let filtered = emps.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal));
+            // PERBAIKAN: Menggunakan String() untuk mencegah error toLowerCase() pada data bertipe Number
+            let filtered = emps.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal));
             
             let html = '';
             filtered.forEach(e => {
@@ -1402,7 +1403,7 @@
                 preConfirm: () => document.getElementById('swalReasonSelect').value
             }).then((res) => {
                 if(res.isConfirmed) {
-                    let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => e.nrp === nrp);
+                    let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => String(e.nrp) === String(nrp));
                     if(emp) { 
                         emp.status = 'Inactive'; 
                         emp.inactiveReason = res.value; 
@@ -1422,7 +1423,7 @@
             Swal.fire({ title: 'Aktifkan Karyawan?', text: "Karyawan ini akan kembali aktif dan muncul di perhitungan Dashboard.", icon: 'question', showCancelButton: true, confirmButtonText: 'Ya, Aktifkan', confirmButtonColor: '#22c55e'
             }).then((res) => {
                 if(res.isConfirmed) {
-                    let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => e.nrp === nrp);
+                    let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => String(e.nrp) === String(nrp));
                     if(emp) { 
                         emp.status = 'Active'; 
                         emp.inactiveReason = ''; 
@@ -1455,7 +1456,7 @@
             let nrp = document.getElementById('empNrp').value.trim();
             if(!nrp) return customSwal('Error', 'NRP Wajib diisi', 'error');
             let emps = getDB(DB_KEY_EMP); let isEdit = document.getElementById('empId').value !== '';
-            if(!isEdit && emps.find(e => e.nrp === nrp)) return customSwal('Error', 'NRP sudah terdaftar', 'error');
+            if(!isEdit && emps.find(e => String(e.nrp) === String(nrp))) return customSwal('Error', 'NRP sudah terdaftar', 'error');
 
             let data = { 
                 nrp: nrp, 
@@ -1471,7 +1472,7 @@
             };
 
             if(isEdit) { 
-                let idx = emps.findIndex(e => e.nrp === nrp); 
+                let idx = emps.findIndex(e => String(e.nrp) === String(nrp)); 
                 data.created = emps[idx].created;
                 emps[idx] = {...emps[idx], ...data}; 
                 addLog('Update Karyawan', `Mengubah data Karyawan (NRP: ${nrp}) via Web Form`);
@@ -1489,7 +1490,7 @@
         }
 
         function editEmp(nrp) {
-            let emp = getDB(DB_KEY_EMP).find(e => e.nrp === nrp); if(!emp) return;
+            let emp = getDB(DB_KEY_EMP).find(e => String(e.nrp) === String(nrp)); if(!emp) return;
             document.getElementById('empId').value = emp.nrp; 
             document.getElementById('empNrp').value = emp.nrp; 
             document.getElementById('empNrp').readOnly = true; 
@@ -1520,12 +1521,12 @@
             Swal.fire({ title: 'Hapus Data Permanen?', text: "Semua relasi project dan training akan ikut terhapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus'
             }).then((res) => {
                 if (res.isConfirmed) {
-                    saveDB(DB_KEY_EMP, getDB(DB_KEY_EMP).filter(e => e.nrp !== nrp)); 
-                    saveDB(DB_KEY_PROJ, getDB(DB_KEY_PROJ).filter(e => e.nrp !== nrp)); 
-                    saveDB(DB_KEY_TRN, getDB(DB_KEY_TRN).filter(e => e.nrp !== nrp)); 
-                    saveDB(DB_KEY_CERT, getDB(DB_KEY_CERT).filter(e => e.nrp !== nrp)); 
-                    saveDB(DB_KEY_JRN, getDB(DB_KEY_JRN).filter(e => e.nrp !== nrp)); 
-                    saveDB(DB_KEY_COMP, getDB(DB_KEY_COMP).filter(e => e.nrp !== nrp));
+                    saveDB(DB_KEY_EMP, getDB(DB_KEY_EMP).filter(e => String(e.nrp) !== String(nrp))); 
+                    saveDB(DB_KEY_PROJ, getDB(DB_KEY_PROJ).filter(e => String(e.nrp) !== String(nrp))); 
+                    saveDB(DB_KEY_TRN, getDB(DB_KEY_TRN).filter(e => String(e.nrp) !== String(nrp))); 
+                    saveDB(DB_KEY_CERT, getDB(DB_KEY_CERT).filter(e => String(e.nrp) !== String(nrp))); 
+                    saveDB(DB_KEY_JRN, getDB(DB_KEY_JRN).filter(e => String(e.nrp) !== String(nrp))); 
+                    saveDB(DB_KEY_COMP, getDB(DB_KEY_COMP).filter(e => String(e.nrp) !== String(nrp)));
                     
                     addLog('Hapus Karyawan', `Menghapus data karyawan (NRP: ${nrp}) dan seluruh relasi histori`);
                     renderEmpTable(); 
@@ -1557,13 +1558,13 @@
         }
         function filterUpdateStatusEmployees() {
             const searchVal = document.getElementById('usSearchEmployeeInput').value.toLowerCase();
-            const filtered = allEmployeesForStatusUpdate.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal));
+            const filtered = allEmployeesForStatusUpdate.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal));
             populateUpdateStatusDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('usNrp').value = filtered[0].nrp; }
         }
         function saveUpdateStatus() {
             const nrp = document.getElementById('usNrp').value; const newStatus = document.getElementById('usStatus').value; const reason = document.getElementById('usInactiveReason').value;
             if(!nrp) return customSwal('Error', 'Silakan pilih karyawan', 'error');
-            let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => e.nrp === nrp);
+            let emps = getDB(DB_KEY_EMP); let emp = emps.find(e => String(e.nrp) === String(nrp));
             if(emp) {
                 emp.status = newStatus; 
                 emp.inactiveReason = newStatus === 'Inactive' ? reason : ''; 
@@ -1578,11 +1579,11 @@
         // Project Management
         let projectModalInst; let allEmployeesForProject = [];
         function renderProjectTable() {
-            const projs = getDB(DB_KEY_PROJ); const emps = getDB(DB_KEY_EMP); const searchVal = (document.getElementById('searchProject')?.value || '').toLowerCase(); const tbody = document.querySelector('#tblProject tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            const projs = getDB(DB_KEY_PROJ); const emps = getDB(DB_KEY_EMP); const searchVal = (document.getElementById('searchProject')?.value || '').toLowerCase(); const tbody = document.querySelector('#tblProject tbody'); const canEdit = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr'));
             let html = '';
             projs.forEach(p => {
-                let emp = emps.find(e => e.nrp === p.nrp); let empName = emp ? emp.nama : p.nrp; let empPilar = emp ? emp.pilar : '-';
-                if (empName.toLowerCase().includes(searchVal) || p.title.toLowerCase().includes(searchVal)) {
+                let emp = emps.find(e => String(e.nrp) === String(p.nrp)); let empName = emp ? emp.nama : p.nrp; let empPilar = emp ? emp.pilar : '-';
+                if (String(empName || '').toLowerCase().includes(searchVal) || String(p.title || '').toLowerCase().includes(searchVal)) {
                     let action = canEdit ? `<div class="d-flex justify-content-center gap-2"><button class="btn btn-sm btn-outline-primary" onclick="editProject('${p.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-outline-danger" onclick="delProject('${p.id}')"><i class="fas fa-trash"></i></button></div>` : '-';
                     html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${p.nrp}</small></td><td><span class="badge bg-dark text-warning">${empPilar}</span></td><td class="fw-medium">${p.title}</td><td>${p.startDate} s/d ${p.endDate}</td><td class="edit-allowed text-center" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
                 }
@@ -1601,23 +1602,23 @@
         }
         function filterProjectEmployees() {
             const searchVal = document.getElementById('projSearchEmployeeInput').value.toLowerCase();
-            const filtered = allEmployeesForProject.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal));
+            const filtered = allEmployeesForProject.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal));
             populateProjectDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('projNrp').value = filtered[0].nrp; updateProjPilar(); }
         }
         function updateProjPilar() {
-            const nrp = document.getElementById('projNrp').value; const emp = getDB(DB_KEY_EMP).find(e => e.nrp === nrp);
+            const nrp = document.getElementById('projNrp').value; const emp = getDB(DB_KEY_EMP).find(e => String(e.nrp) === String(nrp));
             document.getElementById('projPilar').value = emp ? emp.pilar : '';
         }
         function saveProject() {
             const id = document.getElementById('projId').value; const nrp = document.getElementById('projNrp').value; const title = document.getElementById('projTitle').value; const start = document.getElementById('projStartDate').value; const end = document.getElementById('projEndDate').value;
             if(!nrp || !title || !start || !end) return customSwal('Error', 'Lengkapi form wajib', 'error');
             let projs = getDB(DB_KEY_PROJ);
-            if(id) { let idx = projs.findIndex(p => p.id === id); if(idx > -1) { projs[idx].title = title; projs[idx].startDate = start; projs[idx].endDate = end; } } 
+            if(id) { let idx = projs.findIndex(p => String(p.id) === String(id)); if(idx > -1) { projs[idx].title = title; projs[idx].startDate = start; projs[idx].endDate = end; } } 
             else { projs.push({ id: 'PRJ' + Date.now(), nrp: nrp, title: title, startDate: start, endDate: end }); }
             saveDB(DB_KEY_PROJ, projs); projectModalInst.hide(); customSwal('Tersimpan', 'Data project diperbarui', 'success'); renderProjectTable();
         }
         function editProject(id) {
-            let p = getDB(DB_KEY_PROJ).find(x => x.id === id); if(!p) return;
+            let p = getDB(DB_KEY_PROJ).find(x => String(x.id) === String(id)); if(!p) return;
             allEmployeesForProject = getDB(DB_KEY_EMP); populateProjectDropdown(allEmployeesForProject);
             document.getElementById('projId').value = p.id; document.getElementById('projNrp').value = p.nrp; document.getElementById('projNrp').disabled = true; document.getElementById('projTitle').value = p.title; document.getElementById('projStartDate').value = p.startDate; document.getElementById('projEndDate').value = p.endDate; updateProjPilar();
             document.getElementById('modalProjectTitle').innerText = 'Edit Project';
@@ -1625,7 +1626,7 @@
         }
         function delProject(id) {
             Swal.fire({ title: 'Hapus Project?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' }).then((res) => {
-                if(res.isConfirmed) { saveDB(DB_KEY_PROJ, getDB(DB_KEY_PROJ).filter(p => p.id !== id)); renderProjectTable(); customSwal('Terhapus', 'Catatan dihapus.', 'success'); }
+                if(res.isConfirmed) { saveDB(DB_KEY_PROJ, getDB(DB_KEY_PROJ).filter(p => String(p.id) !== String(id))); renderProjectTable(); customSwal('Terhapus', 'Catatan dihapus.', 'success'); }
             });
         }
         function resetAllProjects() {
@@ -1637,10 +1638,10 @@
         // Training
         let trainingModalInst; let allEmployeesForTraining = [];
         function renderTrainingTable() {
-            const trns = getDB(DB_KEY_TRN); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblTraining tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            const trns = getDB(DB_KEY_TRN); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblTraining tbody'); const canEdit = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr'));
             let html = '';
             trns.forEach(t => {
-                let emp = emps.find(e => e.nrp === t.nrp); let empName = emp ? emp.nama : t.nrp; let badgeClass = t.status === 'Passed' ? 'bg-success' : t.status === 'Failed' ? 'bg-danger' : 'bg-warning text-dark'; let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delTraining('${t.id}')"><i class="fas fa-trash"></i></button>` : '-';
+                let emp = emps.find(e => String(e.nrp) === String(t.nrp)); let empName = emp ? emp.nama : t.nrp; let badgeClass = t.status === 'Passed' ? 'bg-success' : t.status === 'Failed' ? 'bg-danger' : 'bg-warning text-dark'; let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delTraining('${t.id}')"><i class="fas fa-trash"></i></button>` : '-';
                 html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${t.nrp}</small></td><td class="fw-medium">${t.name}</td><td>${t.provider}</td><td>${t.date}</td><td><span class="fw-bold">${t.score}</span></td><td><span class="badge ${badgeClass}">${t.status}</span></td><td class="edit-allowed" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
             });
             tbody.innerHTML = html || `<tr><td colspan="7" class="text-center py-5 text-muted">Belum ada histori training</td></tr>`;
@@ -1651,33 +1652,33 @@
             if(!trainingModalInst) trainingModalInst = new bootstrap.Modal(document.getElementById('modalTraining')); trainingModalInst.show();
         }
         function populateTrainingDropdown(employees) { const select = document.getElementById('trNrp'); select.innerHTML = ''; employees.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
-        function filterTrainingEmployees() { const searchVal = document.getElementById('trSearchEmployeeInput').value.toLowerCase(); const filtered = allEmployeesForTraining.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateTrainingDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('trNrp').value = filtered[0].nrp; } }
+        function filterTrainingEmployees() { const searchVal = document.getElementById('trSearchEmployeeInput').value.toLowerCase(); const filtered = allEmployeesForTraining.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal)); populateTrainingDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('trNrp').value = filtered[0].nrp; } }
         function saveTraining() { let trns = getDB(DB_KEY_TRN); trns.push({ id: 'TRN' + Date.now(), nrp: document.getElementById('trNrp').value, name: document.getElementById('trName').value, provider: document.getElementById('trProvider').value, date: document.getElementById('trDate').value, score: document.getElementById('trScore').value, status: document.getElementById('trStatus').value }); saveDB(DB_KEY_TRN, trns); trainingModalInst.hide(); customSwal('Success', 'Histori training ditambahkan', 'success'); renderTrainingTable(); }
-        function delTraining(id) { saveDB(DB_KEY_TRN, getDB(DB_KEY_TRN).filter(t => t.id !== id)); renderTrainingTable(); }
+        function delTraining(id) { saveDB(DB_KEY_TRN, getDB(DB_KEY_TRN).filter(t => String(t.id) !== String(id))); renderTrainingTable(); }
 
         // Certification
         let certificationModalInst; let allEmployeesForCertification = [];
         function renderCertificationTable() {
-            const certs = getDB(DB_KEY_CERT); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblCertification tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            const certs = getDB(DB_KEY_CERT); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblCertification tbody'); const canEdit = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr'));
             let html = '';
             certs.forEach(c => {
-                let emp = emps.find(e => e.nrp === c.nrp); let empName = emp ? emp.nama : c.nrp; let badgeClass = c.status === 'Active' ? 'bg-success' : c.status === 'Expired' ? 'bg-danger' : 'bg-warning text-dark'; let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delCertification('${c.id}')"><i class="fas fa-trash"></i></button>` : '-';
+                let emp = emps.find(e => String(e.nrp) === String(c.nrp)); let empName = emp ? emp.nama : c.nrp; let badgeClass = c.status === 'Active' ? 'bg-success' : c.status === 'Expired' ? 'bg-danger' : 'bg-warning text-dark'; let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delCertification('${c.id}')"><i class="fas fa-trash"></i></button>` : '-';
                 html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${c.nrp}</small></td><td class="fw-medium">${c.name}</td><td>${c.provider}</td><td>${c.date}</td><td><span class="fw-bold text-primary">${c.score}</span></td><td><span class="badge ${badgeClass}">${c.status}</span></td><td class="edit-allowed" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
             });
             tbody.innerHTML = html || `<tr><td colspan="7" class="text-center py-5 text-muted">Belum ada sertifikasi terdata</td></tr>`;
         }
         function openCertificationModal() { document.getElementById('formCertification').reset(); document.getElementById('certSearchEmployeeInput').value = ''; allEmployeesForCertification = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateCertificationDropdown(allEmployeesForCertification); if(!certificationModalInst) certificationModalInst = new bootstrap.Modal(document.getElementById('modalCertification')); certificationModalInst.show(); }
         function populateCertificationDropdown(employees) { const select = document.getElementById('certNrp'); select.innerHTML = ''; employees.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
-        function filterCertificationEmployees() { const searchVal = document.getElementById('certSearchEmployeeInput').value.toLowerCase(); const filtered = allEmployeesForCertification.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateCertificationDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('certNrp').value = filtered[0].nrp; } }
+        function filterCertificationEmployees() { const searchVal = document.getElementById('certSearchEmployeeInput').value.toLowerCase(); const filtered = allEmployeesForCertification.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal)); populateCertificationDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('certNrp').value = filtered[0].nrp; } }
         function saveCertification() { let certs = getDB(DB_KEY_CERT); certs.push({ id: 'CRT' + Date.now(), nrp: document.getElementById('certNrp').value, name: document.getElementById('certName').value, provider: document.getElementById('certProvider').value, date: document.getElementById('certDate').value, score: document.getElementById('certScore').value, status: document.getElementById('certStatus').value }); saveDB(DB_KEY_CERT, certs); certificationModalInst.hide(); customSwal('Success', 'Sertifikasi tersimpan', 'success'); renderCertificationTable(); }
-        function delCertification(id) { saveDB(DB_KEY_CERT, getDB(DB_KEY_CERT).filter(c => c.id !== id)); renderCertificationTable(); }
+        function delCertification(id) { saveDB(DB_KEY_CERT, getDB(DB_KEY_CERT).filter(c => String(c.id) !== String(id))); renderCertificationTable(); }
 
         // Expert Dashboard
         function renderExpertView() {
             const emps = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); const jrnls = getDB(DB_KEY_JRN);
             let pilars = { 'PRE':0, 'TPSE':0, 'TCDE':0, 'PSC':0, 'AE':0 }; let pilarJrnls = { 'PRE':0, 'TPSE':0, 'TCDE':0, 'PSC':0, 'AE':0 };
             emps.forEach(e => { let p = (e.pilar || '').toString().toUpperCase().trim(); if(pilars[p] !== undefined) pilars[p]++; });
-            jrnls.forEach(j => { let emp = emps.find(e => e.nrp === j.nrp); if (emp) { let p = (emp.pilar || '').toString().toUpperCase().trim(); if (pilarJrnls[p] !== undefined) pilarJrnls[p]++; } });
+            jrnls.forEach(j => { let emp = emps.find(e => String(e.nrp) === String(j.nrp)); if (emp) { let p = (emp.pilar || '').toString().toUpperCase().trim(); if (pilarJrnls[p] !== undefined) pilarJrnls[p]++; } });
 
             let pilarRatios = Object.keys(pilars).map(p => ({ pilar: p, ratio: pilars[p] > 0 ? (pilarJrnls[p] / pilars[p]) : 0 })).sort((a, b) => b.ratio - a.ratio);
             let pilarRanks = {}; let currentRank = 1; let starsMap = [3, 2, 1];
@@ -1716,18 +1717,18 @@
         // Expert Profile
         function renderExpertProfileTable() {
             const emps = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); const trns = getDB(DB_KEY_TRN); const certs = getDB(DB_KEY_CERT); const jrnls = getDB(DB_KEY_JRN); const comps = getDB(DB_KEY_COMP); const searchVal = (document.getElementById('searchExpertProfile')?.value || '').toLowerCase(); const container = document.getElementById('expertProfileContainer');
-            let filteredEmps = emps.filter(e => e.nama.toLowerCase().includes(searchVal) || e.nrp.toLowerCase().includes(searchVal)); let html = '';
+            let filteredEmps = emps.filter(e => String(e.nama || '').toLowerCase().includes(searchVal) || String(e.nrp || '').toLowerCase().includes(searchVal)); let html = '';
             
             filteredEmps.forEach(e => {
-                let empTrns = trns.filter(t => t.nrp === e.nrp).length; let empCerts = certs.filter(c => c.nrp === e.nrp && c.status === 'Active').length;
-                let empJrnls = jrnls.filter(j => j.nrp === e.nrp); let totalJrnls = empJrnls.length;
+                let empTrns = trns.filter(t => String(t.nrp) === String(e.nrp)).length; let empCerts = certs.filter(c => String(c.nrp) === String(e.nrp) && c.status === 'Active').length;
+                let empJrnls = jrnls.filter(j => String(j.nrp) === String(e.nrp)); let totalJrnls = empJrnls.length;
                 
                 let starBadge = '';
                 if (totalJrnls >= 3) starBadge = '<span class="text-warning fs-5" style="filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></span>';
                 else if (totalJrnls === 2) starBadge = '<span class="fs-5" style="color: #cbd5e1; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));"><i class="fas fa-star"></i><i class="fas fa-star"></i></span>';
                 else if (totalJrnls === 1) starBadge = '<span class="text-dark fs-5"><i class="fas fa-star"></i></span>';
                 
-                let comp = comps.find(c => c.nrp === e.nrp); let avgComp = 'N/A'; let compBadge = 'bg-secondary';
+                let comp = comps.find(c => String(c.nrp) === String(e.nrp)); let avgComp = 'N/A'; let compBadge = 'bg-secondary';
                 if(comp) { let total = parseFloat(comp.tech) + parseFloat(comp.inno) + parseFloat(comp.ana) + parseFloat(comp.plan) + parseFloat(comp.comm) + parseFloat(comp.drive); avgComp = (total / 6).toFixed(2); compBadge = avgComp >= 4 ? 'bg-success' : avgComp >= 3 ? 'bg-primary' : 'bg-secondary text-dark'; }
                 
                 html += `
@@ -1775,8 +1776,8 @@
             container.innerHTML = html || `<div class="col-12 text-center py-5 text-muted"><i class="fas fa-search fs-2 mb-3"></i><br>Pencarian tidak menemukan hasil.</div>`;
         }
         function viewExpertDetail(nrp) {
-            const emp = getDB(DB_KEY_EMP).find(e => e.nrp === nrp); if(!emp) return;
-            const trns = getDB(DB_KEY_TRN).filter(t => t.nrp === nrp); const certs = getDB(DB_KEY_CERT).filter(c => c.nrp === nrp); const jrnls = getDB(DB_KEY_JRN).filter(j => j.nrp === nrp); const comp = getDB(DB_KEY_COMP).find(c => c.nrp === nrp);
+            const emp = getDB(DB_KEY_EMP).find(e => String(e.nrp) === String(nrp)); if(!emp) return;
+            const trns = getDB(DB_KEY_TRN).filter(t => String(t.nrp) === String(nrp)); const certs = getDB(DB_KEY_CERT).filter(c => String(c.nrp) === String(nrp)); const jrnls = getDB(DB_KEY_JRN).filter(j => String(j.nrp) === String(nrp)); const comp = getDB(DB_KEY_COMP).find(c => String(c.nrp) === String(nrp));
             let trnList = trns.length ? trns.map(t => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${t.name} <small class="text-muted">(${t.date})</small></li>`).join('') : '<li class="text-muted">Tidak ada data</li>';
             let certList = certs.length ? certs.map(c => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${c.name} <small class="text-muted">(${c.provider})</small></li>`).join('') : '<li class="text-muted">Tidak ada data</li>';
             let jrnlList = jrnls.length ? jrnls.map(j => `<li class="mb-1"><i class="fas fa-bookmark text-warning me-2"></i>${j.title} <span class="badge bg-light text-dark border ms-1">${j.level}</span></li>`).join('') : '<li class="text-muted">Tidak ada data</li>';
@@ -1806,11 +1807,11 @@
         // Expert Journals
         let journalModalInst; let allExpertsForJournal = [];
         function renderJournalsTable() {
-            const jrnls = getDB(DB_KEY_JRN); const emps = getDB(DB_KEY_EMP); const searchVal = (document.getElementById('searchJournal')?.value || '').toLowerCase(); const tbody = document.querySelector('#tblJournals tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            const jrnls = getDB(DB_KEY_JRN); const emps = getDB(DB_KEY_EMP); const searchVal = (document.getElementById('searchJournal')?.value || '').toLowerCase(); const tbody = document.querySelector('#tblJournals tbody'); const canEdit = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr'));
             let html = '';
             jrnls.forEach(j => {
-                let emp = emps.find(e => e.nrp === j.nrp); let empName = emp ? emp.nama : j.nrp;
-                if (empName.toLowerCase().includes(searchVal) || j.nrp.toLowerCase().includes(searchVal)) {
+                let emp = emps.find(e => String(e.nrp) === String(j.nrp)); let empName = emp ? emp.nama : j.nrp;
+                if (String(empName || '').toLowerCase().includes(searchVal) || String(j.nrp || '').toLowerCase().includes(searchVal)) {
                     let badgeColor = j.level.includes('Internasional') ? 'bg-primary text-dark' : (j.level.includes('SINTA') ? 'bg-success' : 'bg-dark text-white');
                     let action = canEdit ? `<button class="btn btn-sm btn-outline-danger" onclick="delJournal('${j.id}')"><i class="fas fa-trash"></i></button>` : '-';
                     html += `<tr><td><strong>${empName}</strong><br><small class="text-muted">${j.nrp}</small></td><td class="fw-medium">${j.title}</td><td><span class="badge ${badgeColor}">${j.level}</span></td><td>${j.date}</td><td class="edit-allowed text-center" style="${canEdit?'':'display:none;'}">${action}</td></tr>`;
@@ -1820,17 +1821,17 @@
         }
         function openJournalModal() { document.getElementById('formJournal').reset(); document.getElementById('jrnSearchExpertInput').value = ''; allExpertsForJournal = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateJournalDropdown(allExpertsForJournal); if(!journalModalInst) journalModalInst = new bootstrap.Modal(document.getElementById('modalJournal')); journalModalInst.show(); }
         function populateJournalDropdown(experts) { const select = document.getElementById('jrnNrp'); select.innerHTML = ''; experts.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
-        function filterJournalExperts() { const searchVal = document.getElementById('jrnSearchExpertInput').value.toLowerCase(); const filtered = allExpertsForJournal.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateJournalDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('jrnNrp').value = filtered[0].nrp; } }
+        function filterJournalExperts() { const searchVal = document.getElementById('jrnSearchExpertInput').value.toLowerCase(); const filtered = allExpertsForJournal.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal)); populateJournalDropdown(filtered); if(filtered.length === 1 && searchVal !== '') { document.getElementById('jrnNrp').value = filtered[0].nrp; } }
         function saveJournal() { let jrnls = getDB(DB_KEY_JRN); jrnls.push({ id: 'JRN' + Date.now(), nrp: document.getElementById('jrnNrp').value, title: document.getElementById('jrnTitle').value, level: document.getElementById('jrnLevel').value, date: document.getElementById('jrnDate').value }); saveDB(DB_KEY_JRN, jrnls); journalModalInst.hide(); customSwal('Tersimpan', 'Jurnal berhasil direkam', 'success'); renderJournalsTable(); if(document.getElementById('view-expertprofile').classList.contains('active')) renderExpertProfileTable(); }
-        function delJournal(id) { saveDB(DB_KEY_JRN, getDB(DB_KEY_JRN).filter(j => j.id !== id)); renderJournalsTable(); }
+        function delJournal(id) { saveDB(DB_KEY_JRN, getDB(DB_KEY_JRN).filter(j => String(j.id) !== String(id))); renderJournalsTable(); }
 
         // Expert Competency
         let competencyModalInst; let allExpertsForCompetency = [];
         function renderCompetencyTable() {
-            const comps = getDB(DB_KEY_COMP); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblCompetency tbody'); const canEdit = (currentUser.role === 'admin' || currentUser.role === 'hr');
+            const comps = getDB(DB_KEY_COMP); const emps = getDB(DB_KEY_EMP); const tbody = document.querySelector('#tblCompetency tbody'); const canEdit = (currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr'));
             let html = '';
             comps.forEach(c => {
-                let emp = emps.find(e => e.nrp === c.nrp);
+                let emp = emps.find(e => String(e.nrp) === String(c.nrp));
                 if(emp) {
                     let total = parseFloat(c.tech) + parseFloat(c.inno) + parseFloat(c.ana) + parseFloat(c.plan) + parseFloat(c.comm) + parseFloat(c.drive); let avg = (total / 6).toFixed(2);
                     let action = canEdit ? `<button class="btn btn-sm btn-outline-dark fw-bold" onclick="editCompetency('${c.nrp}')"><i class="fas fa-edit text-primary me-1"></i> Edit</button>` : '-';
@@ -1841,15 +1842,15 @@
         }
         function openCompetencyModal() { document.getElementById('formCompetency').reset(); document.getElementById('compSearchExpertInput').value = ''; allExpertsForCompetency = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateCompetencyDropdown(allExpertsForCompetency); populateCompetencyScores(); if(!competencyModalInst) competencyModalInst = new bootstrap.Modal(document.getElementById('modalCompetency')); competencyModalInst.show(); }
         function populateCompetencyDropdown(experts) { const select = document.getElementById('compNrp'); select.innerHTML = ''; experts.forEach(e => { select.innerHTML += `<option value="${e.nrp}">${e.nrp} - ${e.nama}</option>`; }); }
-        function filterCompetencyExperts() { const searchVal = document.getElementById('compSearchExpertInput').value.toLowerCase(); const filtered = allExpertsForCompetency.filter(e => e.nrp.toLowerCase().includes(searchVal) || e.nama.toLowerCase().includes(searchVal)); populateCompetencyDropdown(filtered); if(filtered.length > 0) { if(filtered.length === 1 && searchVal !== '') { document.getElementById('compNrp').value = filtered[0].nrp; } populateCompetencyScores(); } }
+        function filterCompetencyExperts() { const searchVal = document.getElementById('compSearchExpertInput').value.toLowerCase(); const filtered = allExpertsForCompetency.filter(e => String(e.nrp || '').toLowerCase().includes(searchVal) || String(e.nama || '').toLowerCase().includes(searchVal)); populateCompetencyDropdown(filtered); if(filtered.length > 0) { if(filtered.length === 1 && searchVal !== '') { document.getElementById('compNrp').value = filtered[0].nrp; } populateCompetencyScores(); } }
         function populateCompetencyScores() {
-            let nrp = document.getElementById('compNrp').value; let comp = getDB(DB_KEY_COMP).find(c => c.nrp === nrp);
+            let nrp = document.getElementById('compNrp').value; let comp = getDB(DB_KEY_COMP).find(c => String(c.nrp) === String(nrp));
             if(comp) { document.getElementById('compTech').value = comp.tech; document.getElementById('compInno').value = comp.inno; document.getElementById('compAna').value = comp.ana; document.getElementById('compPlan').value = comp.plan; document.getElementById('compComm').value = comp.comm; document.getElementById('compDrive').value = comp.drive; } 
             else { ['compTech','compInno','compAna','compPlan','compComm','compDrive'].forEach(id => document.getElementById(id).value = '3.0'); }
         }
         function editCompetency(nrp) { allExpertsForCompetency = getDB(DB_KEY_EMP).filter(e => e.status === 'Active'); populateCompetencyDropdown(allExpertsForCompetency); document.getElementById('compNrp').value = nrp; populateCompetencyScores(); if(!competencyModalInst) competencyModalInst = new bootstrap.Modal(document.getElementById('modalCompetency')); competencyModalInst.show(); }
         function saveCompetency() {
-            let nrp = document.getElementById('compNrp').value; let comps = getDB(DB_KEY_COMP); let idx = comps.findIndex(c => c.nrp === nrp);
+            let nrp = document.getElementById('compNrp').value; let comps = getDB(DB_KEY_COMP); let idx = comps.findIndex(c => String(c.nrp) === String(nrp));
             let data = { nrp: nrp, tech: document.getElementById('compTech').value, inno: document.getElementById('compInno').value, ana: document.getElementById('compAna').value, plan: document.getElementById('compPlan').value, comm: document.getElementById('compComm').value, drive: document.getElementById('compDrive').value };
             if(idx > -1) comps[idx] = data; else comps.push(data); saveDB(DB_KEY_COMP, comps); competencyModalInst.hide(); customSwal('Tersimpan', 'Evaluasi telah direkam.', 'success'); renderCompetencyTable();
         }
@@ -1860,7 +1861,7 @@
             let filtered = pilar !== 'ALL' ? emps.filter(e => e.pilar === pilar) : emps;
             let html = '';
             filtered.forEach(e => {
-                let empProjs = projs.filter(p => p.nrp === e.nrp).length; let empTrns = trns.filter(t => t.nrp === e.nrp).length; let empCerts = certs.filter(c => c.nrp === e.nrp).length;
+                let empProjs = projs.filter(p => String(p.nrp) === String(e.nrp)).length; let empTrns = trns.filter(t => String(t.nrp) === String(e.nrp)).length; let empCerts = certs.filter(c => String(c.nrp) === String(e.nrp)).length;
                 html += `<tr><td><strong>${e.nrp}</strong></td><td class="fw-medium">${e.nama}</td><td><span class="badge bg-dark text-warning">${e.pilar}</span></td><td>${e.golongan}</td><td>${e.tahun}</td><td class="text-center">${empProjs}</td><td class="text-center">${empTrns}</td><td class="text-center">${empCerts}</td></tr>`;
             });
             document.querySelector('#tblReport tbody').innerHTML = html || '<tr><td colspan="8" class="text-center py-4">Data tidak ditemukan</td></tr>';
@@ -1914,7 +1915,7 @@
                 data.forEach(row => { 
                     if(row.NRP) { 
                         let nrpStr = String(row.NRP).trim();
-                        let existingIdx = emps.findIndex(x => x.nrp === nrpStr);
+                        let existingIdx = emps.findIndex(x => String(x.nrp) === nrpStr);
                         
                         let empData = {
                             nrp: nrpStr,
@@ -1923,7 +1924,7 @@
                             golongan: (row.Golongan !== undefined && row.Golongan !== null) ? String(row.Golongan).trim() : '',
                             pilar: row.Pilar || '',
                             tahun: (typeof row.Tahun === 'number' && row.Tahun > 10000) ? new Date(Math.round((row.Tahun - 25569) * 86400 * 1000)).getFullYear() : (row.Tahun ? String(row.Tahun).substring(0, 4) : ''),
-                            status: row['Status(Active/Inactive)'] || '',
+                            status: row['Status(Active/Inactive)'] || 'Active',
                             
                             lastUpdatedBy: currentUser ? currentUser.username : 'System',
                             lastUpdatedAt: new Date().toISOString()
@@ -1951,7 +1952,7 @@
         function handleImportTrainingExcel(e) { processExcel(e, data => { let trns = getDB(DB_KEY_TRN); let added = 0; data.forEach(row => { if(row.NRP && row.TrainingName) { trns.push({ id: 'TRN' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.TrainingName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row.Score || '', status: row['Status(Passed/Failed/Ongoing)'] || 'Passed' }); added++; } }); saveDB(DB_KEY_TRN, trns); renderTrainingTable(); customSwal('Berhasil', `${added} Data training dimasukkan`, 'success'); }); }
         function handleImportCertificationExcel(e) { processExcel(e, data => { let certs = getDB(DB_KEY_CERT); let added = 0; data.forEach(row => { if(row.NRP && row.CertificationName) { certs.push({ id: 'CRT' + Date.now() + Math.random(), nrp: String(row.NRP), name: row.CertificationName, provider: row.Provider || '', date: row['Date(YYYY-MM-DD)'] || '', score: row['Score/Grade'] || '', status: row['Status(Active/Expired/In Progress)'] || 'Active' }); added++; } }); saveDB(DB_KEY_CERT, certs); renderCertificationTable(); customSwal('Berhasil', `${added} Data sertifikat dimasukkan`, 'success'); }); }
         function handleImportJournalExcel(e) { processExcel(e, data => { let jrnls = getDB(DB_KEY_JRN); let added = 0; data.forEach(row => { if(row.NRP && row['Journal Title']) { jrnls.push({ id: 'JRN' + Date.now() + Math.random(), nrp: String(row.NRP), title: row['Journal Title'], level: row['Publication Level'] || 'Nasional', date: typeof row['Date(YYYY-MM-DD)']==='number' ? parseExcelDate(row['Date(YYYY-MM-DD)']) : row['Date(YYYY-MM-DD)'] }); added++; } }); saveDB(DB_KEY_JRN, jrnls); renderJournalsTable(); customSwal('Berhasil', `${added} Data jurnal dimasukkan`, 'success'); }); }
-        function handleImportCompetencyExcel(e) { processExcel(e, data => { let comps = getDB(DB_KEY_COMP); let added = 0; data.forEach(row => { if(row.NRP) { let compData = { nrp: String(row.NRP), tech: row.Technical||3, inno: row.Innovation||3, ana: row.Analysis||3, plan: row.Planning||3, comm: row.Communication||3, drive: row.Drive||3 }; let idx = comps.findIndex(c => c.nrp === String(row.NRP)); if(idx > -1) comps[idx] = compData; else comps.push(compData); added++; } }); saveDB(DB_KEY_COMP, comps); renderCompetencyTable(); customSwal('Berhasil', `${added} Skor kompetensi diperbarui`, 'success'); }); }
+        function handleImportCompetencyExcel(e) { processExcel(e, data => { let comps = getDB(DB_KEY_COMP); let added = 0; data.forEach(row => { if(row.NRP) { let compData = { nrp: String(row.NRP), tech: row.Technical||3, inno: row.Innovation||3, ana: row.Analysis||3, plan: row.Planning||3, comm: row.Communication||3, drive: row.Drive||3 }; let idx = comps.findIndex(c => String(c.nrp) === String(row.NRP)); if(idx > -1) comps[idx] = compData; else comps.push(compData); added++; } }); saveDB(DB_KEY_COMP, comps); renderCompetencyTable(); customSwal('Berhasil', `${added} Skor kompetensi diperbarui`, 'success'); }); }
         
         function downloadTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'Nama', 'TanggalLahir(YYYY-MM-DD)', 'Golongan', 'Pilar', 'Tahun', 'Status(Active/Inactive)']]), "Employees"); XLSX.writeFile(wb, "Template_Karyawan_UT.xlsx"); }
         function downloadTrainingTemplate() { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['NRP', 'TrainingName', 'Provider', 'Date(YYYY-MM-DD)', 'Score', 'Status(Passed/Failed/Ongoing)']]), "Training"); XLSX.writeFile(wb, "Template_Training_UT.xlsx"); }
@@ -1963,12 +1964,12 @@
         function exportJournalPDF() {
             const doc = new window.jspdf.jsPDF(); doc.setFontSize(16); doc.text("Laporan Jurnal Publikasi Expert", 14, 22); doc.setFontSize(10); doc.text("Sistem HRMS | Diekstrak pada: " + new Date().toLocaleDateString(), 14, 28);
             const emps = getDB(DB_KEY_EMP);
-            doc.autoTable({ startY: 34, head: [['NRP', 'Nama Expert', 'Judul Jurnal', 'Level Publikasi', 'Tgl Rilis']], body: getDB(DB_KEY_JRN).map(j => { let e = emps.find(x => x.nrp === j.nrp); return [j.nrp, e ? e.nama : j.nrp, j.title, j.level, j.date]; }), theme: 'grid', headStyles: { fillColor: [26, 26, 26], textColor: [255, 192, 0] } }); doc.save('Jurnal_Expert_UT.pdf');
+            doc.autoTable({ startY: 34, head: [['NRP', 'Nama Expert', 'Judul Jurnal', 'Level Publikasi', 'Tgl Rilis']], body: getDB(DB_KEY_JRN).map(j => { let e = emps.find(x => String(x.nrp) === String(j.nrp)); return [j.nrp, e ? e.nama : j.nrp, j.title, j.level, j.date]; }), theme: 'grid', headStyles: { fillColor: [26, 26, 26], textColor: [255, 192, 0] } }); doc.save('Jurnal_Expert_UT.pdf');
         }
         function exportCompetencyPDF() {
             const doc = new window.jspdf.jsPDF('landscape'); doc.setFontSize(16); doc.text("Laporan Evaluasi Kompetensi Expert", 14, 22); doc.setFontSize(10); doc.text("Sistem HRMS | Diekstrak pada: " + new Date().toLocaleDateString(), 14, 28);
             const emps = getDB(DB_KEY_EMP);
-            doc.autoTable({ startY: 34, head: [['Nama Expert', 'Technical', 'Innovation', 'Analysis', 'Planning', 'Comm', 'Drive', 'Skor Rata-rata']], body: getDB(DB_KEY_COMP).map(c => { let e = emps.find(x => x.nrp === c.nrp); return [e ? e.nama : c.nrp, c.tech, c.inno, c.ana, c.plan, c.comm, c.drive, ((parseFloat(c.tech)+parseFloat(c.inno)+parseFloat(c.ana)+parseFloat(c.plan)+parseFloat(c.comm)+parseFloat(c.drive))/6).toFixed(2)]; }), theme: 'grid', headStyles: { fillColor: [26, 26, 26], textColor: [255, 192, 0] } }); doc.save('Kompetensi_Expert_UT.pdf');
+            doc.autoTable({ startY: 34, head: [['Nama Expert', 'Technical', 'Innovation', 'Analysis', 'Planning', 'Comm', 'Drive', 'Skor Rata-rata']], body: getDB(DB_KEY_COMP).map(c => { let e = emps.find(x => String(x.nrp) === String(c.nrp)); return [e ? e.nama : c.nrp, c.tech, c.inno, c.ana, c.plan, c.comm, c.drive, ((parseFloat(c.tech)+parseFloat(c.inno)+parseFloat(c.ana)+parseFloat(c.plan)+parseFloat(c.comm)+parseFloat(c.drive))/6).toFixed(2)]; }), theme: 'grid', headStyles: { fillColor: [26, 26, 26], textColor: [255, 192, 0] } }); doc.save('Kompetensi_Expert_UT.pdf');
         }
 
         // Settings
