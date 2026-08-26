@@ -453,6 +453,8 @@
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                         <h3 class="mb-0 fw-bold">Database Karyawan</h3>
                         <div class="d-flex gap-2 flex-wrap">
+                            <!-- TOMBOL BARU: BUKA SPREADSHEET -->
+                            <button class="btn btn-outline-info fw-bold edit-allowed" onclick="window.open('URL_SPREADSHEET_KAMU_DISINI', '_blank')"><i class="fas fa-external-link-alt me-2"></i>Buka Spreadsheet</button>
                             <button class="btn btn-light border fw-bold" onclick="downloadTemplate()"><i class="fas fa-file-excel me-2 text-success"></i>Template</button>
                             <button class="btn btn-outline-secondary edit-allowed fw-bold" onclick="document.getElementById('importExcelInput').click()"><i class="fas fa-upload me-2"></i>Import Data</button>
                             <input type="file" id="importExcelInput" class="d-none" accept=".xlsx, .xls" onchange="handleImportExcel(event)">
@@ -1085,7 +1087,16 @@
                     localDB[DB_KEY_CERT] = result.data.certification || [];
                     localDB[DB_KEY_JRN] = result.data.journals || [];
                     localDB[DB_KEY_COMP] = result.data.competency || [];
-                    localDB[DB_KEY_LOG] = result.data.logs || [];
+                    
+                    let fetchedLogs = result.data.logs || result.data.Logs || result.data.LOGS;
+                    if (!fetchedLogs) {
+                        for(let k in result.data) { if(k.toLowerCase() === 'logs') { fetchedLogs = result.data[k]; break; } }
+                    }
+                    if (!fetchedLogs || fetchedLogs.length === 0) {
+                        let localBackup = localStorage.getItem('hrms_backup_logs');
+                        fetchedLogs = localBackup ? JSON.parse(localBackup) : [];
+                    }
+                    localDB[DB_KEY_LOG] = fetchedLogs;
                     
                     if(loginBtn) {
                         loginBtn.disabled = false;
@@ -1106,6 +1117,11 @@
             let oldData = localDB[key] || [];
             localDB[key] = newData; // Update memori lokal agar UI langsung berubah (Responsive)
             
+            // Backup khusus LOGS ke local storage untuk mencegah hilang saat F5 jika GAS belum di-update
+            if(key === DB_KEY_LOG) {
+                localStorage.setItem('hrms_backup_logs', JSON.stringify(newData));
+            }
+
             // Logika Hapus Semua Data
             if (newData.length === 0 && oldData.length > 0) {
                 fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: "deleteAll", sheetName: DB_MAP[key].sheet }) });
@@ -1130,7 +1146,7 @@
             }
         }
 
-        // FUNGSI PENCATAT LOG AKTIVITAS (DIPERBARUI DENGAN EXTENDED DETAIL)
+        // FUNGSI PENCATAT LOG AKTIVITAS
         function addLog(action, detail, extendedDetail = '') {
             let logs = getDB(DB_KEY_LOG);
             let now = new Date().toISOString();
@@ -1229,9 +1245,9 @@
 
         // FUNGSI UNTUK MENAMPILKAN DETAIL LOG VIA POPUP
         function viewLogDetail(logId) {
-            let log = getDB(DB_KEY_LOG).find(l => l.id === logId);
+            let log = getDB(DB_KEY_LOG).find(l => String(l.id) === String(logId));
             if(!log) return;
-            let ext = log.extendedDetail || log.extendeddetail || 'Tidak ada riwayat detail tambahan untuk aktivitas ini.';
+            let ext = log.extendedDetail || log.extendeddetail || log.ExtendedDetail || 'Tidak ada riwayat detail tambahan untuk aktivitas ini.';
             Swal.fire({
                 title: '<div class="fs-4 fw-bold">Detail Perubahan</div>',
                 html: `<div class="text-start text-dark p-3 rounded" style="max-height: 350px; overflow-y: auto; background-color: #F8FAFC; border: 1px solid #E2E8F0; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; line-height: 1.5;">${ext}</div>`,
@@ -1576,12 +1592,32 @@
                 }
             });
         }
+        
+        // FITUR KEAMANAN HAPUS SEMUA DATA DENGAN VERIFIKASI PASSWORD
         function deleteAllEmployees() {
-            Swal.fire({ title: 'HAPUS KESELURUHAN?', text: "Sistem akan dikosongkan secara paksa. Aksi ini tidak dapat dibatalkan!", icon: 'error', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Eksekusi Hapus'
+            Swal.fire({
+                title: 'HAPUS KESELURUHAN?',
+                text: "Sistem akan dikosongkan secara paksa. Masukkan password Anda untuk melanjutkan:",
+                icon: 'error',
+                input: 'password',
+                inputPlaceholder: 'Masukkan password Anda',
+                inputAttributes: { autocapitalize: 'off', autocorrect: 'off' },
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Eksekusi Hapus',
+                cancelButtonText: 'Batal',
+                preConfirm: (password) => {
+                    if (!password) {
+                        Swal.showValidationMessage('Password wajib diisi!');
+                    } else if (password !== currentUser.password) {
+                        Swal.showValidationMessage('Password salah! Akses ditolak.');
+                    }
+                    return password === currentUser.password;
+                }
             }).then((res) => {
-                if (res.isConfirmed) { 
+                if (res.isConfirmed && res.value) { 
                     saveDB(DB_KEY_EMP, []); saveDB(DB_KEY_PROJ, []); saveDB(DB_KEY_TRN, []); saveDB(DB_KEY_CERT, []); saveDB(DB_KEY_JRN, []); saveDB(DB_KEY_COMP, []); 
-                    addLog('Hapus Keseluruhan', `Seluruh data database karyawan telah dikosongkan`, `Penghapusan paksa yang membersihkan seluruh tabel Master Employee dan turunannya.`);
+                    addLog('Hapus Keseluruhan', `Seluruh data database karyawan telah dikosongkan`, `Penghapusan paksa yang membersihkan seluruh tabel Master Employee dan turunannya. Eksekutor: ${currentUser.username}`);
                     renderEmpTable(); customSwal('Terhapus!', 'Database dikosongkan.', 'success'); 
                 }
             });
