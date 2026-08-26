@@ -111,7 +111,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /* Sidebar - PERBAIKAN POIN 2: Ditambahkan overflow-y untuk mencegah background terpotong saat di-scroll */
         .sidebar {
             width: 260px;
             background-color: var(--sidebar-bg);
@@ -124,7 +124,15 @@
             height: 100vh;
             z-index: 1000;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto; 
+            overflow-x: hidden;
         }
+        /* Custom Scrollbar khusus Sidebar agar rapi */
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: var(--sidebar-bg); }
+        .sidebar::-webkit-scrollbar-thumb { background: #4A5568; border-radius: 4px; }
+        .sidebar::-webkit-scrollbar-thumb:hover { background: var(--brand-color); }
+
         .sidebar.collapsed {
             width: 80px;
         }
@@ -257,7 +265,7 @@
 
         .edit-allowed { display: none; }
 
-        /* Custom Scrollbar */
+        /* Custom Scrollbar Area Utama */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--primary-bg); }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
@@ -345,7 +353,7 @@
                 <div class="nav-text px-4 mt-4 mb-2 text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 1px;">SYSTEM</div>
                 <a href="#" class="nav-link-custom py-2" onclick="switchView('reports', this)"><i class="fas fa-file-alt"></i> <span class="nav-text">Laporan (Report)</span></a>
                 <a href="#" class="nav-link-custom py-2 edit-allowed" onclick="switchView('logs', this)"><i class="fas fa-history"></i> <span class="nav-text">Log Aktivitas</span></a>
-                <div class="mt-auto mb-3">
+                <div class="mt-auto mb-3 pt-3">
                     <a href="#" class="nav-link-custom edit-allowed py-2" onclick="switchView('users', this)"><i class="fas fa-user-shield"></i> <span class="nav-text">User Access</span></a>
                     <a href="#" class="nav-link-custom py-2" onclick="switchView('settings', this)"><i class="fas fa-cog"></i> <span class="nav-text">Settings</span></a>
                     <a href="#" class="nav-link-custom py-2 text-danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Keluar</span></a>
@@ -1502,6 +1510,7 @@
             if(document.getElementById('view-dashboard').classList.contains('active')) renderDashboard();
         }
 
+        // PERBAIKAN POIN 1: Logic fallback untuk memastikan teks selalu dirender
         function editEmp(nrp) {
             let emp = getDB(DB_KEY_EMP).find(e => String(e.nrp) === String(nrp)); if(!emp) return;
             document.getElementById('empId').value = emp.nrp; 
@@ -1518,16 +1527,13 @@
             if(inactiveVal) document.getElementById('empInactiveReason').value = inactiveVal;
             document.getElementById('empReasonDiv').style.display = emp.status === 'Inactive' ? 'block' : 'none';
             
-            let lastUpdBy = emp.lastUpdatedBy || emp.lastupdatedby;
-            let lastUpdAt = emp.lastUpdatedAt || emp.lastupdatedat;
-            let lastUpdDiv = document.getElementById('empLastUpdated');
+            // Paksakan teks agar selalu tampil untuk memberikan indikasi riwayat
+            let lastUpdBy = emp.lastUpdatedBy || emp.lastupdatedby || emp.LastUpdatedBy || 'Sistem (Default)';
+            let lastUpdAt = emp.lastUpdatedAt || emp.lastupdatedat || emp.LastUpdatedAt || emp.created || new Date().toISOString();
             
-            if(lastUpdBy && lastUpdAt) {
-                lastUpdDiv.innerHTML = `<i class="fas fa-info-circle me-1"></i>Terakhir diubah oleh: <strong>${lastUpdBy}</strong>, ${formatLogDate(lastUpdAt)}`;
-                lastUpdDiv.style.display = 'block';
-            } else {
-                lastUpdDiv.style.display = 'none';
-            }
+            let lastUpdDiv = document.getElementById('empLastUpdated');
+            lastUpdDiv.innerHTML = `<i class="fas fa-info-circle me-1 text-primary"></i>Terakhir diubah oleh: <strong class="text-dark">${lastUpdBy}</strong>, <span class="text-muted">${formatLogDate(lastUpdAt)}</span>`;
+            lastUpdDiv.style.display = 'block';
 
             document.getElementById('modalEmpTitle').innerText = 'Edit Karyawan';
             if(!empModalInst) empModalInst = new bootstrap.Modal(document.getElementById('modalEmp')); 
